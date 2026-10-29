@@ -1,0 +1,42 @@
+RIFFWELL — SADECE TELEFONLA KURULUM (yaklaşık 10 dakika)
+=========================================================
+
+A) ZIP'İ AÇ
+   1. Bu zip'i Dosyalar uygulamasına kaydet.
+   2. Zip'e bir kez dokun → yanında "riffwell" klasörü oluşur.
+
+B) GITHUB'A YÜKLE (Safari ile)
+   1. Safari'de github.com'a gir, ücretsiz hesap aç / giriş yap.
+   2. Sağ üstteki profil resmi ya da "+" → "New repository".
+      • Repository name: riffwell
+      • "Public" seçili olsun
+      • "Add a README file" kutusunu işaretle
+      • "Create repository"
+   3. Depo sayfasında "Add file" → "Upload files".
+      Görmüyorsan: adres çubuğundaki "aA" → "Masaüstü Web Sitesini İste".
+   4. "choose your files" → "Göz At" → Dosyalar'da riffwell klasörünü aç →
+      sağ üstte "Seç" → 6 dosyanın hepsini işaretle → "Aç":
+        index.html, manifest.webmanifest, sw.js,
+        icon-192.png, icon-512.png, apple-touch-icon.png
+      (KURULUM.txt gerekmez.)
+   5. Aşağıdaki yeşil "Commit changes" düğmesine dokun.
+
+C) YAYINI AÇ
+   1. Depoda "Settings" (mobilde "···" menüsünde olabilir) → soldaki/aşağıdaki "Pages".
+   2. "Branch" altında "main" ve "/ (root)" seç → "Save".
+   3. 1–2 dakika bekle, sayfayı yenile. Üstte adresin görünür:
+        https://KULLANICIADIN.github.io/riffwell/
+
+D) TELEFONA KUR
+   1. Bu adresi Safari'de aç (Chrome'da olmaz).
+   2. Paylaş düğmesi → "Ana Ekrana Ekle" → "Ekle".
+   3. Ana ekrandaki Riffwell simgesinden aç. Artık hep tam ekran açılır ve
+      bir kez açtıktan sonra internetsiz de çalışır.
+
+BİLMEN GEREKENLER
+ • Şarkılar ana ekrandaki uygulamanın içinde saklanır; Safari'de açılan sayfa
+   ayrı depolama kullanır. Şarkıları ana ekran simgesinden açtığında ekle.
+ • Simgeyi ana ekrandan silersen içindeki şarkılar da silinir.
+ • Kilit ekranında dinlerken Efektler'deki ses motorunu kapalı tut.
+ • Güncelleme: yeni index.html'i aynı şekilde yükle ve sw.js içindeki
+   SURUM'ü bir artır. Uygulamayı kapatıp aç, yeni sürüm gelir.

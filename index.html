@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Riffwell</title>
+<meta name="description" content="Çevrimdışı müzik çalar ve ses efektleri">
+<meta name="theme-color" content="#06070B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Riffwell">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+/* Layout: Liquid Glass. Kapak renginden beslenen ortam katmanı üzerinde yüzen cam yüzeyler; sayfa yığını, yüzen kapsül sekme çubuğu + ayrı arama düğmesi, üstünde cam mini çalar. */
+:root{
+  --bg:#ECEEF5;--fg:#0B0C10;--muted:rgba(22,24,34,.58);--line:rgba(22,24,34,.09);
+  --accent:#FF2D55;--accent-ink:#E01E48;--accent-soft:rgba(255,45,85,.14);--on-accent:#FFFFFF;--danger:#FF3B30;
+  --glass:rgba(255,255,255,.5);--glass-strong:rgba(255,255,255,.76);--glass-hi:rgba(255,255,255,.9);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 .5px rgba(255,255,255,.7),inset 0 -1px 2px rgba(255,255,255,.3),0 10px 30px rgba(30,36,70,.12),0 1px 2px rgba(30,36,70,.06);
+  --solid:#F6F7FB;--track:rgba(22,24,34,.12);--knob:#FFFFFF;--scrim:rgba(245,246,250,.38);
+  --tint:#7C8CFF;--tint2:#FF8FB1;--amb:.62;--blur:24px;
+  --sw-blue:#0A84FF;--sw-violet:#8E5CF7;
+  --body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  --display:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,system-ui,sans-serif;
+  --mono:ui-rounded,'SF Pro Rounded',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --tabh:62px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#06070B;--fg:#F5F6FA;--muted:rgba(235,237,247,.6);--line:rgba(255,255,255,.09);
+  --accent:#FF375F;--accent-ink:#FF6A88;--accent-soft:rgba(255,55,95,.22);--on-accent:#FFFFFF;--danger:#FF453A;
+  --glass:rgba(40,42,54,.42);--glass-strong:rgba(30,32,40,.78);--glass-hi:rgba(255,255,255,.16);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 -1px 2px rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.45);
+  --solid:#15161C;--track:rgba(255,255,255,.16);--knob:#F2F3F7;--scrim:rgba(6,7,11,.5);--amb:.45;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#06070B;--fg:#F5F6FA;--muted:rgba(235,237,247,.6);--line:rgba(255,255,255,.09);
+  --accent:#FF375F;--accent-ink:#FF6A88;--accent-soft:rgba(255,55,95,.22);--on-accent:#FFFFFF;--danger:#FF453A;
+  --glass:rgba(40,42,54,.42);--glass-strong:rgba(30,32,40,.78);--glass-hi:rgba(255,255,255,.16);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 -1px 2px rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.45);
+  --solid:#15161C;--track:rgba(255,255,255,.16);--knob:#F2F3F7;--scrim:rgba(6,7,11,.5);--amb:.45;color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;min-height:100vh;overscroll-behavior-y:none}img{max-width:100%}
+.install{margin:0 0 14px;padding:12px 16px;border-radius:22px;font-size:14px;font-weight:600;color:var(--accent-ink)}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;letter-spacing:-.011em;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
+svg{flex:none}
+
+/* Cam malzeme */
+.install,.glass,.hero,.stat,.tile,.fxcard,.list,.group,.mini,.tabcap,.tabsearch,.btn,.chip,.hdr .ib,select,.field input,.searchbox input,.np-tools,.empty,.toast,.sheet-card{
+  background:var(--glass);-webkit-backdrop-filter:blur(var(--blur)) saturate(190%);backdrop-filter:blur(var(--blur)) saturate(190%);box-shadow:var(--glass-shadow);border:0}
+
+/* Ortam katmanı */
+.ambient{position:fixed;inset:-10%;z-index:-1;pointer-events:none;opacity:var(--amb);
+  background:radial-gradient(40% 32% at 18% 12%,var(--tint),transparent 70%),radial-gradient(38% 30% at 88% 28%,var(--tint2),transparent 72%),radial-gradient(46% 36% at 30% 92%,var(--accent),transparent 72%),radial-gradient(40% 30% at 85% 85%,var(--tint),transparent 70%);
+  filter:saturate(1.2);animation:drift 26s ease-in-out infinite alternate;transition:background 1s}
+@keyframes drift{to{transform:translate3d(-3%,2%,0) scale(1.06)}}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:15;background:var(--scrim);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+
+.shell{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(var(--tabh) + 120px)}
+
+/* Gezinme çubuğu */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:58px;padding-block:8px;margin-inline:-8px;padding-inline:8px;border-radius:0 0 24px 24px;transition:background .25s,box-shadow .25s}
+.hdr.scrolled{background:var(--scrim);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%)}
+.hdr .ttl{font-weight:600;font-size:17px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .2s}
+.hdr.scrolled .ttl{opacity:1}
+.hdr.root .ttl{opacity:0}
+.hdr .ib{width:44px;height:44px}
+.hdr-acts{display:flex;gap:8px;justify-content:flex-end;min-width:44px}
+.brandmark{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin:2px 0 4px}
+.big-ttl{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.03em;margin:0 0 16px;text-wrap:balance;line-height:1.08}
+.sub-ttl{color:var(--muted);margin:-10px 0 16px;font-size:14.5px}
+
+.ib{border:0;background:transparent;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--fg)}
+.ib svg{width:22px;height:22px}
+.ib.dim{color:var(--muted)}
+.ib.on{color:var(--accent-ink)}
+
+.page.fwd{animation:pin .34s cubic-bezier(.2,.9,.25,1)}
+.page.back{animation:pback .28s cubic-bezier(.2,.9,.25,1)}
+@keyframes pin{from{transform:translateX(34px) scale(.985);opacity:0;filter:blur(4px)}to{transform:none;opacity:1;filter:none}}
+@keyframes pback{from{transform:translateX(-26px);opacity:0}to{transform:none;opacity:1}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:12px 18px;font-weight:600;font-size:15px;white-space:nowrap;transition:transform .15s}
+.btn:active,.chip:active,.tile:active,.card:active{transform:scale(.96)}
+.btn svg{width:18px;height:18px}
+.btn.pri{background:color-mix(in srgb,var(--accent) 88%,transparent);color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 6px rgba(0,0,0,.12),0 8px 22px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn.danger{color:var(--danger)}
+.btn.sm{padding:8px 14px;font-size:14px}
+.btn[disabled]{opacity:.45}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn-row .btn{flex:1;min-width:120px}
+
+.sec{margin-top:28px}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 4px 10px}
+.sec-h h2{font-family:var(--display);font-size:21px;font-weight:700;margin:0;letter-spacing:-.02em}
+.link{border:0;background:none;color:var(--accent-ink);font-weight:500;font-size:16px;padding:4px}
+
+/* Ana sayfa */
+.hero{border-radius:28px;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+@media (max-width:420px){.hero{grid-template-columns:1fr}}
+.hero h3{margin:0;font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:-.02em}
+.hero p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.stat{border-radius:20px;padding:12px;display:grid;gap:2px;min-width:0}
+.stat b{font-family:var(--mono);font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat span{font-size:12px;color:var(--muted)}
+.hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:146px;gap:14px;overflow-x:auto;scrollbar-width:none;padding:4px;margin-inline:-4px}
+.hscroll::-webkit-scrollbar{display:none}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{border-radius:24px;padding:14px;text-align:left;display:grid;gap:12px;min-width:0;transition:transform .15s}
+.tile .ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.tile .ic svg{width:20px;height:20px}
+.tile b{font-weight:600;display:block}
+.tile span{font-size:13px;color:var(--muted)}
+
+/* Kapaklar */
+.art{width:50px;height:50px;border-radius:12px;overflow:hidden;position:relative;flex:none;background:var(--track)}
+.art img{width:100%;height:100%;object-fit:cover;display:block}
+.gen{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-weight:700;color:#fff;font-size:16px;background:radial-gradient(120% 90% at 20% 12%,hsl(var(--h) 90% 70%),transparent 60%),linear-gradient(145deg,hsl(var(--h) 75% 52%),hsl(calc(var(--h) + 55) 70% 32%))}
+.card{border:0;background:transparent;text-align:left;padding:0;display:grid;gap:8px;min-width:0;transition:transform .15s}
+.card .art{width:100%;height:auto;aspect-ratio:1;max-width:100%;border-radius:22px;box-shadow:0 10px 26px rgba(0,0,0,.16)}
+.card .gen{font-size:32px;display:grid;color:#fff;white-space:normal}
+.card b{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px;padding-inline:2px}
+.card span{font-size:13px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-inline:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:20px 14px}
+@media (max-width:380px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Gruplu listeler */
+.list,.group{list-style:none;margin:0;padding:6px;border-radius:26px;display:grid}
+.row{display:grid;grid-template-columns:50px minmax(0,1fr) auto 38px;align-items:center;gap:12px;padding:7px 6px 7px 8px;border-radius:20px;cursor:pointer}
+.list>li+li,.group>*+*{position:relative}
+.list>li+li::before,.group>*+*::before{content:"";position:absolute;top:0;left:74px;right:12px;height:.5px;background:var(--line);z-index:2}
+.row.on .t{color:var(--accent-ink)}
+.row.sel{grid-template-columns:26px 50px minmax(0,1fr) auto}
+.row.sel input{width:22px;height:22px;accent-color:var(--accent)}
+.row .num{font-family:var(--mono);color:var(--muted);font-size:14px;text-align:center;font-weight:600}
+.meta{min-width:0}
+.t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dur{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.navrow{display:grid;grid-template-columns:50px minmax(0,1fr) auto;align-items:center;gap:12px;padding:7px 8px;border:0;background:transparent;width:100%;text-align:left;border-radius:20px}
+.navrow:active,.row:active{background:var(--glass-hi)}
+.navrow .chev{color:var(--muted);width:16px;height:16px;opacity:.7}
+.round{border-radius:50%!important}
+.vu{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;gap:3px;padding-bottom:14px;background:rgba(0,0,0,.42)}
+.vu i{width:4px;background:#fff;border-radius:2px;height:30%;animation:vu .9s ease-in-out infinite}
+.vu i:nth-child(2){animation-delay:-.3s}.vu i:nth-child(3){animation-delay:-.6s}
+.paused .vu i{animation-play-state:paused}
+@keyframes vu{0%,100%{height:25%}50%{height:70%}}
+
+/* Kaydırma eylemleri */
+.swipe{position:relative;overflow:hidden;border-radius:20px}
+.swipe>.row{position:relative;z-index:1;touch-action:pan-y;-webkit-user-select:none;user-select:none;transition:transform .3s cubic-bezier(.2,.9,.25,1),background .2s}
+.swipe.show-l>.row,.swipe.show-r>.row{background:var(--solid)}
+.sw-l,.sw-r{position:absolute;top:3px;bottom:3px;display:flex;gap:4px;visibility:hidden;padding-inline:4px}
+.sw-l{left:0}.sw-r{right:0}
+.swipe.show-l .sw-l,.swipe.show-r .sw-r{visibility:visible}
+.swb{border:0;width:72px;border-radius:18px;background:var(--c);color:#fff;display:grid;place-content:center;justify-items:center;gap:3px;font-size:11.5px;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.swb svg{width:22px;height:22px}
+.swipe.full .sw-l{right:0}.swipe.full .sw-l .swb:first-child{flex:1;width:auto}.swipe.full .sw-l .swb:not(:first-child){display:none}
+.swipe.full .sw-r{left:0}.swipe.full .sw-r .swb:last-child{flex:1;width:auto}.swipe.full .sw-r .swb:not(:last-child){display:none}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 2px 12px}
+.count{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
+select{border-radius:999px;padding:9px 14px;font-size:14px;-webkit-appearance:none;appearance:none}
+
+/* Detay başlığı */
+.dhead{display:grid;justify-items:center;text-align:center;gap:8px;margin-bottom:20px}
+.dhead .art{width:min(62vw,230px);height:auto;aspect-ratio:1;max-width:100%;border-radius:30px;box-shadow:0 24px 50px color-mix(in srgb,var(--tint) 40%,transparent),0 6px 18px rgba(0,0,0,.15)}
+.dhead .gen{font-size:56px}
+.dhead h1{font-family:var(--display);font-weight:800;font-size:26px;margin:8px 0 0;letter-spacing:-.025em;text-wrap:balance}
+.dhead .by{border:0;background:none;color:var(--accent-ink);font-weight:600;padding:0;font-size:17px}
+.dhead .m{color:var(--muted);font-size:13.5px;font-family:var(--mono)}
+.dhead .btn-row{width:100%;max-width:420px;margin-top:8px}
+
+.empty{text-align:center;padding:36px 20px;color:var(--muted);display:grid;gap:10px;justify-items:center;border-radius:28px}
+.empty h3{font-family:var(--display);color:var(--fg);margin:0;font-size:19px;font-weight:700}
+.empty p{margin:0;max-width:34ch}
+.field{display:flex;gap:8px}
+.field input{flex:1;min-width:0;border-radius:999px;padding:13px 18px;font-size:16px}
+.searchbox{position:relative;margin-bottom:18px}
+.searchbox svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:19px;height:19px;color:var(--muted);z-index:1}
+.searchbox input{width:100%;border-radius:999px;padding:14px 16px 14px 44px;font-size:17px}
+input::placeholder{color:var(--muted)}
+
+/* Kaydırıcılar */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(var(--accent),var(--accent)) 0/var(--p) 100% no-repeat,var(--track)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--knob);box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 3px 10px rgba(0,0,0,.22),inset 0 1px 0 #fff}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--track)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--accent)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border:0;border-radius:50%;background:var(--knob);box-shadow:0 3px 10px rgba(0,0,0,.22)}
+input[type=range]:disabled{opacity:.5}
+
+/* Efektler */
+.fxcard{border-radius:28px;padding:16px;display:grid;gap:12px}
+.fxcard+.fxcard,.fxbody>.fxcard+.fxcard{margin-top:12px}
+.fxbody{margin-top:12px}
+.fxh{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.fxh b{font-weight:600;font-size:16.5px}
+.fxh small{display:block;color:var(--muted);font-size:13px;font-weight:400}
+.sl{display:grid;grid-template-columns:100px minmax(0,1fr) 64px;align-items:center;gap:10px;font-size:14.5px}
+.sl output{font-family:var(--mono);font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.sw{position:relative;width:62px;height:30px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
+.sw span{position:absolute;inset:0;border-radius:999px;background:var(--track);transition:background .25s;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
+.sw span::after{content:"";position:absolute;top:2px;left:2px;width:38px;height:26px;border-radius:999px;background:var(--knob);box-shadow:0 2px 8px rgba(0,0,0,.22),inset 0 1px 0 #fff;transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+.sw input:checked+span{background:#34C759}
+.sw input:checked+span::after{transform:translateX(20px)}
+.sw input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:3px;margin:-3px}
+.chips::-webkit-scrollbar{display:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:600;white-space:nowrap;transition:transform .15s}
+.chip[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 88%,transparent);color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 14px color-mix(in srgb,var(--accent) 30%,transparent)}
+.eqcurve{width:100%;height:84px;display:block}
+.eqcols{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;align-items:end}
+.eqcol{display:grid;justify-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--muted);font-weight:600}
+.eqcol output{color:var(--fg)}
+.eqcol .slot{position:relative;width:30px;height:128px;display:block}
+.eqcol .slot input{position:absolute;left:50%;top:50%;width:128px;height:30px;transform:translate(-50%,-50%) rotate(-90deg)}
+.master{background:linear-gradient(135deg,var(--accent-soft),var(--glass))}
+.warn{font-size:13px;color:var(--muted);margin:0}
+.fxoff .fxbody{opacity:.45;pointer-events:none}
+
+/* Mini çalar ve sekme çubuğu */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;pointer-events:none;display:grid;gap:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.dock>*{max-width:600px;width:100%;margin:0 auto;pointer-events:auto}
+.mini{border-radius:999px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;padding:7px 8px 7px 7px;position:relative;overflow:hidden;cursor:pointer;background:var(--glass-strong)}
+.mini .art{width:44px;height:44px;border-radius:50%}
+.mini .prog{position:absolute;left:62px;right:110px;bottom:5px;height:2.5px;border-radius:2px;background:var(--track);overflow:hidden}
+.mini .prog i{display:block;height:100%;width:0;background:var(--accent)}
+.mini .t{font-size:15px}.mini .s{font-size:13px}
+.ctrls{display:flex;align-items:center;gap:2px}
+.pp{width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--fg);display:grid;place-items:center}
+.pp svg{width:24px;height:24px}
+.tabs{display:flex;gap:10px;align-items:stretch;height:var(--tabh)}
+.tabcap{flex:1;border-radius:999px;display:grid;grid-template-columns:repeat(4,1fr);padding:4px;background:var(--glass-strong)}
+.tabsearch{width:var(--tabh);flex:none;border-radius:50%;display:grid;place-items:center;color:var(--fg);background:var(--glass-strong)}
+.tabsearch svg{width:24px;height:24px}
+.tabsearch[aria-current="page"]{color:var(--accent-ink)}
+.tab{border:0;background:none;display:grid;justify-items:center;align-content:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--fg);border-radius:999px;transition:background .25s,color .25s}
+.tab svg{width:24px;height:24px}
+.tab[aria-current="page"]{color:var(--accent-ink);background:var(--glass-hi);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 8px rgba(0,0,0,.06)}
+
+/* Çalıyor ekranı */
+.np{position:fixed;inset:0;z-index:30;overflow-y:auto;background:var(--bg);padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.np-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+.np-bg>*{position:absolute;inset:-25%;width:150%;height:150%;object-fit:cover;filter:blur(60px) saturate(1.7);opacity:.95}
+.np-bg::after{content:"";position:absolute;inset:0;background:var(--scrim)}
+.np.open{animation:up .38s cubic-bezier(.2,.9,.25,1)}
+@keyframes up{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+.np-in{position:relative;max-width:460px;margin:0 auto;display:grid;gap:18px}
+.np-top{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center}
+.np-top .ib{width:44px;height:44px}
+.np-top .ib,.np-in .big .pp{background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);box-shadow:var(--glass-shadow)}
+.np-top .lbl{text-align:center;min-width:0}
+.np-top .lbl small{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.np-top .lbl b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-art{width:min(100%,380px);aspect-ratio:1;max-width:100%;margin:4px auto 0;border-radius:32px;overflow:hidden;position:relative;box-shadow:0 30px 70px rgba(0,0,0,.28);background:var(--track);transition:transform .45s cubic-bezier(.3,1.3,.5,1)}
+.np.paused .np-art{transform:scale(.9)}
+.np-art img{width:100%;height:100%;object-fit:cover}
+.np-art .gen{font-size:88px}
+#viz{width:100%;height:34px;display:block}
+.np-title{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;gap:8px}
+.np-title .t{font-family:var(--display);font-size:23px;font-weight:700;white-space:normal;text-wrap:balance;line-height:1.2;letter-spacing:-.02em}
+.np-title .s{white-space:normal}
+.np-title .s button{border:0;background:none;padding:0;color:var(--muted);font-weight:500;font-size:17px}
+.seek{display:grid;gap:2px}
+.times{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600}
+.big{display:flex;justify-content:space-between;align-items:center}
+.big .pp{width:78px;height:78px;color:var(--fg)}.big .pp svg{width:34px;height:34px}
+.big .ib{width:56px;height:56px}.big .ib svg{width:34px;height:34px}
+.big .ib.sm svg{width:22px;height:22px}
+.ib.act{color:var(--accent-ink);background:var(--accent-soft)}
+.np-tools{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;border-radius:999px;padding:5px}
+.np-tools button{border:0;background:none;border-radius:999px;padding:8px 2px;display:grid;justify-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted)}
+.np-tools button svg{width:22px;height:22px;color:var(--fg)}
+.np-tools button.on,.np-tools button.on svg{color:var(--accent-ink)}
+
+/* Sayfa altı paneller ve bildirim */
+.sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.28);display:flex;align-items:flex-end;justify-content:center;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.sheet-card{width:100%;max-width:520px;border-radius:36px;padding:10px 14px 16px;display:grid;gap:2px;max-height:82vh;overflow:auto;animation:up .3s cubic-bezier(.2,.9,.25,1);background:var(--glass-strong)}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--track);margin:0 auto 10px}
+.sheet-card h4{margin:0 8px 2px;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.02em}
+.sheet-card .hint{margin:0 8px 10px;color:var(--muted);font-size:14px}
+.opt{display:flex;align-items:center;gap:14px;border:0;background:transparent;text-align:left;padding:13px 10px;border-radius:18px;font-weight:500;width:100%;font-size:16px}
+.opt:active{background:var(--glass-hi)}
+.opt svg{width:22px;height:22px;color:var(--accent-ink)}
+.opt.danger,.opt.danger svg{color:var(--danger)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + 96px + env(safe-area-inset-bottom,0px));z-index:50;padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;max-width:calc(100% - 32px);text-align:center;background:var(--glass-strong)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){:root{--glass:var(--solid);--glass-strong:var(--solid)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="ambient" aria-hidden="true"></div>
+<input id="fileIn" class="sr" type="file" multiple accept="audio/*,.mp3,.m4a,.aac,.flac,.wav,.ogg,.opus,.aif,.aiff,.zip">
+<input id="zipIn" class="sr" type="file" multiple accept=".zip,application/zip">
+
+<div class="shell">
+  <header class="hdr root" id="hdr">
+    <div id="hdrL"></div>
+    <div class="ttl" id="hdrT"></div>
+    <div class="hdr-acts" id="hdrR"></div>
+  </header>
+  <main id="page" class="page"></main>
+</div>
+
+<div class="dock">
+  <div class="mini" id="mini" hidden>
+    <div class="art" id="mArt"></div>
+    <div class="meta"><div class="t" id="mT"></div><div class="s" id="mS"></div></div>
+    <div class="ctrls"><button class="pp" id="mPlay" aria-label="Çal"></button><button class="ib" id="mNext" aria-label="Sonraki"></button></div>
+    <div class="prog"><i id="mProg"></i></div>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Ana gezinme"></nav>
+</div>
+
+<section class="np" id="np" hidden aria-label="Çalıyor">
+  <div class="np-bg" id="npBg"></div>
+  <div class="np-in">
+    <div class="np-top">
+      <button class="ib" id="npClose" aria-label="Kapat"></button>
+      <div class="lbl"><small>Çalıyor</small><b id="npFrom"></b></div>
+      <button class="ib" id="npMore" aria-label="Seçenekler"></button>
+    </div>
+    <div class="np-art" id="npArt"></div>
+    <div class="np-title">
+      <div class="meta"><div class="t" id="npT"></div><div class="s"><button id="npS"></button></div></div>
+      <button class="ib" id="npFav" aria-label="Favorilere ekle"></button>
+    </div>
+    <div class="seek">
+      <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Konum">
+      <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+    </div>
+    <div class="big">
+      <button class="ib sm" id="shuf" aria-label="Karıştır"></button>
+      <button class="ib" id="prev" aria-label="Önceki"></button>
+      <button class="pp" id="play" aria-label="Çal"></button>
+      <button class="ib" id="next" aria-label="Sonraki"></button>
+      <button class="ib sm" id="rep" aria-label="Tekrar"></button>
+    </div>
+    <canvas id="viz" aria-hidden="true"></canvas>
+    <div class="np-tools">
+      <button id="tQueue"></button><button id="tFx"></button><button id="tSpeed"></button><button id="tSleep"></button><button id="tList"></button>
+    </div>
+  </div>
+</section>
+
+<div class="sheet" id="sheet" hidden><div class="sheet-card" id="sheetCard"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=t=>{if(!isFinite(t)||t<0)return'–:––';t=Math.floor(t);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=String(t%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+s:m+':'+s};
+const fmtLong=t=>{t=Math.round(t/60);return t<60?t+' dk':Math.floor(t/60)+' sa '+(t%60)+' dk'};
+const fmtSize=b=>!b?'–':b<1048576?(b/1024).toFixed(0)+' KB':(b/1048576).toFixed(1)+' MB';
+const ls={get(k,d){try{const v=localStorage.getItem('wavelet.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('wavelet.'+k,JSON.stringify(v))}catch(e){}}};
+const coll=new Intl.Collator('tr');
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+
+const P=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const F=d=>`<svg viewBox="0 0 24 24" fill="currentColor">${d}</svg>`;
+const I={
+ play:F('<path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/>'),
+ pause:F('<rect x="6" y="5" width="4.2" height="14" rx="1.3"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.3"/>'),
+ next:F('<path d="M5 6.2v11.6a.9.9 0 0 0 1.4.75L15 12.75a.9.9 0 0 0 0-1.5L6.4 5.45A.9.9 0 0 0 5 6.2z"/><rect x="16.5" y="5.5" width="2.6" height="13" rx="1"/>'),
+ prev:F('<path d="M19 6.2v11.6a.9.9 0 0 1-1.4.75L9 12.75a.9.9 0 0 1 0-1.5l8.6-5.8A.9.9 0 0 1 19 6.2z"/><rect x="4.9" y="5.5" width="2.6" height="13" rx="1"/>'),
+ shuf:P('<path d="M16 4h4v4M4 20 20 4M20 16v4h-4M15 15l5 5M4 4l5 5"/>'),
+ rep:P('<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>'),
+ rep1:P('<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/><path d="M11 10h1v4"/>'),
+ heart:P('<path d="M12 20s-7.5-4.6-9.2-9.3C1.6 7.3 4 4 7.3 4c2 0 3.6 1.1 4.7 2.7C13.1 5.1 14.7 4 16.7 4 20 4 22.4 7.3 21.2 10.7 19.5 15.4 12 20 12 20z"/>'),
+ heartF:F('<path d="M12 20s-7.5-4.6-9.2-9.3C1.6 7.3 4 4 7.3 4c2 0 3.6 1.1 4.7 2.7C13.1 5.1 14.7 4 16.7 4 20 4 22.4 7.3 21.2 10.7 19.5 15.4 12 20 12 20z"/>'),
+ more:F('<circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/>'),
+ down:P('<path d="m6 9 6 6 6-6"/>'), back:P('<path d="m15 5-7 7 7 7"/>'), chev:P('<path d="m9 5 7 7-7 7"/>'),
+ x:P('<path d="M6 6l12 12M18 6 6 18"/>'), plus:P('<path d="M12 5v14M5 12h14"/>'),
+ home:P('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),
+ lib:P('<rect x="3" y="4" width="4" height="16" rx="1"/><rect x="9" y="4" width="4" height="16" rx="1"/><path d="m15.5 5.2 3.8-1 3.5 15.4-3.8 1z"/>'),
+ search:P('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+ lists:P('<path d="M3 6h12M3 12h12M3 18h8"/><circle cx="18" cy="17" r="3"/><path d="M21 17V6l-3 1"/>'),
+ fx:P('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'),
+ nextUp:P('<path d="M4 6h11M4 12h11M4 18h7M18 15v6M15 18h6"/>'), queue:P('<path d="M4 6h16M4 12h16M4 18h10"/>'),
+ note:P('<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'),
+ trash:P('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>'),
+ user:P('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>'),
+ disc:P('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>'),
+ folder:P('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+ speed:P('<path d="M12 14l4-5"/><path d="M3.5 18a9 9 0 1 1 17 0"/>'),
+ moon:P('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'),
+ listAdd:P('<path d="M3 6h12M3 12h12M3 18h7M17 14v7M13.5 17.5h7"/>'),
+ edit:P('<path d="M4 20h4L19 9l-4-4L4 16z"/>'), check:P('<path d="m5 12 5 5 9-10"/>'),
+ clock:P('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+ restore:P('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>')
+};
+
+/* ===== Durum ===== */
+let tracks=[];const byId=id=>tracks.find(t=>t.id===id);
+let queue=[],qi=-1,queueName='';
+let shuffle=ls.get('shuffle',false),repeat=ls.get('repeat','off'),sortBy=ls.get('sort','added');
+let playlists=ls.get('playlists',[]),favs=new Set(ls.get('favs',[])),plays=ls.get('plays',{}),hiddenDemos=new Set(ls.get('hiddenDemos',[])),recent=ls.get('recent',[]);
+const saveMeta=()=>{ls.set('playlists',playlists);ls.set('favs',[...favs]);ls.set('plays',plays);ls.set('hiddenDemos',[...hiddenDemos]);ls.set('recent',recent)};
+
+/* ===== IndexedDB ===== */
+let db=null;
+const idbOpen=()=>new Promise(r=>{try{const q=indexedDB.open('wavelet',1);q.onupgradeneeded=()=>q.result.createObjectStore('tracks',{keyPath:'id'});q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
+const idbAll=()=>new Promise(r=>{if(!db)return r([]);try{const q=db.transaction('tracks').objectStore('tracks').getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>r([])}catch(e){r([])}});
+const idbPut=t=>{if(!db)return;try{db.transaction('tracks','readwrite').objectStore('tracks').put(t)}catch(e){}};
+const idbDel=id=>{if(!db)return;try{db.transaction('tracks','readwrite').objectStore('tracks').delete(id)}catch(e){}};
+
+/* ===== Örnek parçalar ===== */
+function wav(sm,sr){const n=sm.length,b=new ArrayBuffer(44+n*2),v=new DataView(b);const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+ w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+ for(let i=0;i<n;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,sm[i]))*32767,true);return new Blob([b],{type:'audio/wav'})}
+function synth(sec,bpm,base,prog,pat,br){const sr=22050,n=sr*sec,o=new Float32Array(n),st=60/bpm/2,bar=st*8;
+ for(let i=0;i<n;i++){const t=i/sr,k=Math.floor(t/st),lt=t-k*st,ch=prog[Math.floor(t/bar)%prog.length],f=base*Math.pow(2,ch[pat[k%pat.length]]/12),env=Math.min(1,lt*300)*Math.exp(-lt*12),ph=2*Math.PI*f*lt;
+  let s=env*(Math.sin(ph)+br*Math.sin(2*ph)+.12*Math.sin(3*ph))*.26;const bt=t%bar;s+=Math.min(1,bt*80)*Math.exp(-bt*.9)*Math.sin(2*Math.PI*base/2*Math.pow(2,ch[0]/12)*bt)*.22;o[i]=s*Math.min(1,t/1.5,(sec-t)/2.5)}
+ return wav(o,sr)}
+function demos(){return [
+ ['demo-1','Sabah Arpeji',28,104,261.63,[[0,4,7,12],[-3,0,4,9],[-7,-3,0,5],[-5,-1,2,7]],[0,1,2,3,2,1,2,1],.35],
+ ['demo-2','Gece Treni',30,88,220,[[0,3,7,10],[-4,0,3,8],[-2,2,5,9],[-5,-2,2,5]],[0,2,1,3,0,2,3,1],.2],
+ ['demo-3','Boğaz Rüzgârı',26,120,293.66,[[0,4,7,11],[2,5,9,12],[-3,0,4,7],[-1,2,5,9]],[0,1,2,3,1,2,3,2],.5]
+].filter(d=>!hiddenDemos.has(d[0])).map((d,i)=>{const blob=synth(d[2],d[3],d[4],d[5],d[6],d[7]);return {id:d[0],title:d[1],artist:'Riffwell',album:'Örnek kayıtlar',duration:d[2],ext:'WAV',fname:d[1]+'.wav',size:blob.size,art:null,added:i,demo:true,blob}})}
+
+/* ===== Etiket okuyucu: ID3v2 / MP4 / FLAC ===== */
+function shrink(src){return new Promise(r=>{const im=new Image();im.onload=()=>{try{const s=360,c=document.createElement('canvas'),k=Math.min(1,s/Math.max(im.width,im.height));c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.84))}catch(e){r(null)}};im.onerror=()=>r(null);im.src=src})}
+const dec=(b,enc)=>{try{let lab=enc===1?(b[0]===0xFE?'utf-16be':'utf-16le'):enc===2?'utf-16be':enc===3?'utf-8':'windows-1252';if(enc===1&&(b[0]===0xFF||b[0]===0xFE))b=b.subarray(2);return new TextDecoder(lab).decode(b).replace(/\u0000+$/,'').replace(/\u0000/g,' / ').trim()}catch(e){return ''}};
+const be32=(b,o)=>((b[o]<<24)>>>0)+(b[o+1]<<16)+(b[o+2]<<8)+b[o+3];
+const ss32=(b,o)=>(b[o]<<21)|(b[o+1]<<14)|(b[o+2]<<7)|b[o+3];
+const rd=async(f,a,n)=>new Uint8Array(await f.slice(a,a+n).arrayBuffer());
+const picUrl=async(bytes,mime)=>{try{const u=URL.createObjectURL(new Blob([bytes],{type:mime||'image/jpeg'}));const r=await shrink(u);URL.revokeObjectURL(u);return r}catch(e){return null}};
+async function id3(f,h){const v=h[3],b=await rd(f,10,ss32(h,6));let o=0;const out={};let pic=null;if(h[5]&0x40)o=v===4?ss32(b,0):be32(b,0)+4;const idl=v===2?3:4;
+ while(o+idl*2<b.length){const id=String.fromCharCode(...b.subarray(o,o+idl));if(!/^[A-Z0-9]+$/.test(id))break;
+  const sz=v===2?(b[o+3]<<16)+(b[o+4]<<8)+b[o+5]:v===4?ss32(b,o+4):be32(b,o+4),hd=v===2?6:10,d=b.subarray(o+hd,o+hd+sz);o+=hd+sz;if(!sz)continue;
+  const enc=d[0],txt=()=>dec(d.subarray(1),enc);
+  if(id==='TIT2'||id==='TT2')out.title=txt();else if(id==='TPE1'||id==='TP1')out.artist=txt();else if(id==='TALB'||id==='TAL')out.album=txt();
+  else if((id==='APIC'||id==='PIC')&&!pic){let p,mime;if(id==='PIC'){mime='image/'+String.fromCharCode(...d.subarray(1,4)).toLowerCase().replace('jpg','jpeg');p=4}else{const e=d.indexOf(0,1);mime=dec(d.subarray(1,e),0)||'image/jpeg';p=e+1}
+   p++;if(enc===1||enc===2){while(p+1<d.length&&!(d[p]===0&&d[p+1]===0))p+=2;p+=2}else{while(p<d.length&&d[p]!==0)p++;p++}pic={bytes:d.subarray(p),mime:mime.includes('/')?mime:'image/'+mime}}}
+ if(pic)out.art=await picUrl(pic.bytes,pic.mime);return out}
+async function mp4(f){let off=0,moov=null;const n=f.size;
+ for(let i=0;i<64&&off+8<=n;i++){const h=await rd(f,off,16);let sz=be32(h,0),hs=8;const t=String.fromCharCode(...h.subarray(4,8));if(sz===1){sz=be32(h,8)*4294967296+be32(h,12);hs=16}else if(sz===0)sz=n-off;
+  if(t==='moov'){if(sz>40e6)return {};moov=await rd(f,off+hs,sz-hs);break}if(sz<8)break;off+=sz}
+ if(!moov)return {};
+ const kids=(b,s,e)=>{const r=[];let o=s;while(o+8<=e){const sz=be32(b,o);if(sz<8||o+sz>e)break;r.push({t:String.fromCharCode(...b.subarray(o+4,o+8)),s:o+8,e:o+sz});o+=sz}return r},find=(l,t)=>l.find(x=>x.t===t);
+ const ud=find(kids(moov,0,moov.length),'udta');if(!ud)return {};const me=find(kids(moov,ud.s,ud.e),'meta');if(!me)return {};const il=find(kids(moov,me.s+4,me.e),'ilst');if(!il)return {};const out={};
+ for(const it of kids(moov,il.s,il.e)){const d=find(kids(moov,it.s,it.e),'data');if(!d)continue;const type=be32(moov,d.s)&0xFFFFFF,p=moov.subarray(d.s+8,d.e);
+  if(it.t==='©nam')out.title=dec(p,3);else if(it.t==='©ART'||(it.t==='aART'&&!out.artist))out.artist=dec(p,3);else if(it.t==='©alb')out.album=dec(p,3);else if(it.t==='covr'&&!out.art)out.art=await picUrl(p,type===14?'image/png':'image/jpeg')}
+ return out}
+async function flac(f){let o=4;const out={};
+ for(let i=0;i<32;i++){const h=await rd(f,o,4),last=h[0]&0x80,type=h[0]&0x7F,len=(h[1]<<16)+(h[2]<<8)+h[3];o+=4;
+  if(type===4||(type===6&&!out.art)){const b=await rd(f,o,len);
+   if(type===4){const dv=new DataView(b.buffer);let p=4+dv.getUint32(0,true);const c=dv.getUint32(p,true);p+=4;
+    for(let k=0;k<c&&p+4<=b.length;k++){const l=dv.getUint32(p,true);p+=4;const s=dec(b.subarray(p,p+l),3);p+=l;const eq=s.indexOf('='),key=s.slice(0,eq).toUpperCase(),val=s.slice(eq+1);
+     if(key==='TITLE')out.title=val;else if(key==='ARTIST'&&!out.artist)out.artist=val;else if(key==='ALBUM')out.album=val}}
+   else{let p=4;const ml=be32(b,p);p+=4;const mime=dec(b.subarray(p,p+ml),0);p+=ml;const dl=be32(b,p);p+=4+dl+16;const pl=be32(b,p);p+=4;out.art=await picUrl(b.subarray(p,p+pl),mime)}}
+  o+=len;if(last)break}
+ return out}
+async function readTags(f){try{const h=await rd(f,0,12);
+ if(h[0]===0x49&&h[1]===0x44&&h[2]===0x33)return await id3(f,h);
+ if(String.fromCharCode(...h.subarray(0,4))==='fLaC')return await flac(f);
+ if(String.fromCharCode(...h.subarray(4,8))==='ftyp')return await mp4(f)}catch(e){}return {}}
+function getDur(f){return new Promise(r=>{const a=new Audio(),u=URL.createObjectURL(f);let ok=false;const fin=v=>{if(!ok){ok=true;URL.revokeObjectURL(u);r(v)}};a.preload='metadata';a.onloadedmetadata=()=>fin(a.duration);a.onerror=()=>fin(NaN);setTimeout(()=>fin(NaN),5000);a.src=u})}
+
+/* ===== İçe aktarma ===== */
+const AUDIO_RE=/\.(mp3|m4a|aac|flac|wav|ogg|oga|opus|aif|aiff|alac|caf)$/i;
+const MIME={mp3:'audio/mpeg',m4a:'audio/mp4',aac:'audio/aac',flac:'audio/flac',wav:'audio/wav',ogg:'audio/ogg',oga:'audio/ogg',opus:'audio/ogg',aif:'audio/aiff',aiff:'audio/aiff',alac:'audio/mp4',caf:'audio/x-caf'};
+async function unzip(f){try{toast('ZIP açılıyor: '+f.name,0);const n=f.size,tail=await rd(f,Math.max(0,n-65558),Math.min(n,65558)),tv=new DataView(tail.buffer);let e=-1;
+ for(let i=tail.length-22;i>=0;i--){if(tv.getUint32(i,true)===0x06054b50){e=i;break}}if(e<0)throw new Error('zip');
+ const cnt=tv.getUint16(e+10,true),cdSize=tv.getUint32(e+12,true),cdOff=tv.getUint32(e+16,true);if(cdOff===0xFFFFFFFF)throw new Error('zip64');
+ const cd=await rd(f,cdOff,cdSize),dv=new DataView(cd.buffer),out=[];let p=0,skipped=0;
+ for(let k=0;k<cnt&&p+46<=cd.length;k++){if(dv.getUint32(p,true)!==0x02014b50)break;
+  const method=dv.getUint16(p+10,true),csize=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lho=dv.getUint32(p+42,true);
+  const name=new TextDecoder('utf-8').decode(cd.subarray(p+46,p+46+nl));p+=46+nl+el+cl;
+  if(name.endsWith('/')||!AUDIO_RE.test(name)||/(^|\/)(__MACOSX|\.)/.test(name))continue;
+  const lh=await rd(f,lho,30),lv=new DataView(lh.buffer),start=lho+30+lv.getUint16(26,true)+lv.getUint16(28,true),data=f.slice(start,start+csize);
+  let blob;if(method===0)blob=data;else if(method===8&&'DecompressionStream' in window){try{blob=await new Response(data.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob()}catch(_){skipped++;continue}}else{skipped++;continue}
+  const nm=name.split('/').pop(),ext=nm.split('.').pop().toLowerCase();out.push(new File([blob],nm,{type:MIME[ext]||'audio/mpeg',lastModified:Date.now()}));toast(`ZIP açılıyor: ${out.length} şarkı bulundu`,0)}
+ if(!out.length)toast(skipped?'Bu ZIP bu cihazda açılamadı. iOS 16.4 veya üstü gerekir.':'Bu ZIP içinde ses dosyası yok',4000);return out}
+ catch(e){toast('ZIP açılamadı: '+f.name,3500);return []}}
+async function importFiles(list){
+ const raw=[...list];let files=[];
+ for(const f of raw){if(/\.zip$/i.test(f.name)||/zip/.test(f.type))files.push(...await unzip(f));else if(/^audio\//.test(f.type)||AUDIO_RE.test(f.name))files.push(f)}
+ if(!files.length){if(!raw.some(f=>/\.zip$/i.test(f.name)))toast('Ses dosyası bulunamadı. MP3, M4A, FLAC veya WAV seç.');return}
+ let n=0;for(const f of files){n++;toast(`Ekleniyor ${n}/${files.length}`,0);
+  const [m,dur]=await Promise.all([readTags(f),getDur(f)]);
+  let base=f.name.replace(/\.[^.]+$/,''),ar=null;const p=base.split(' - ');if(p.length>1){ar=p.shift().trim();base=p.join(' - ').trim()}
+  const t={id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),title:m.title||base,artist:m.artist||ar||'Bilinmeyen sanatçı',album:m.album||'Bilinmeyen albüm',duration:dur,ext:(f.name.split('.').pop()||'').toUpperCase(),fname:f.name,size:f.size,art:m.art||null,added:Date.now(),demo:false,blob:f};
+  tracks.push(t);idbPut(t)}
+ renderPage('none');toast(files.length+' şarkı eklendi');
+}
+$('#fileIn').onchange=e=>{closeSheet();importFiles(e.target.files);e.target.value=''};
+$('#zipIn').onchange=e=>{closeSheet();importFiles(e.target.files);e.target.value=''};
+function addMenu(){openSheet(`<div class="grab"></div><h4>Şarkı ekle</h4>
+ <label class="opt" for="fileIn" style="cursor:pointer">${I.note}<span><b style="font-weight:600;display:block">Dosya seç</b><span class="s" style="white-space:normal">Birden fazla şarkı için açılan pencerede sağ üstteki “Seç”e dokun, şarkıları işaretle, sonra “Aç”.</span></span></label>
+ <label class="opt" for="zipIn" style="cursor:pointer">${I.folder}<span><b style="font-weight:600;display:block">Klasörün tamamı (ZIP)</b><span class="s" style="white-space:normal">Dosyalar uygulamasında klasöre basılı tut, “Sıkıştır”a dokun. Oluşan ZIP'i burada seç, içindeki tüm şarkılar eklenir.</span></span></label>
+ <p class="hint" style="margin-top:8px">Bilgisayarda dosyaları bu sayfanın üzerine sürükleyip bırakabilirsin.</p>`)}
+document.addEventListener('dragover',e=>{if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files'))e.preventDefault()});
+document.addEventListener('drop',e=>{if(e.dataTransfer&&e.dataTransfer.files.length){e.preventDefault();importFiles(e.dataTransfer.files)}});
+
+/* ===== Ses motoru ve DSP ===== */
+const audio=new Audio();audio.preload='auto';audio.setAttribute('playsinline','');
+const BANDS=[32,64,125,250,500,1000,2000,4000,8000,16000];
+const FX_DEF={on:false,eqOn:true,eq:[0,0,0,0,0,0,0,0,0,0],pre:0,bass:0,crystal:0,width:100,surround:0,surSpeed:0.15,reverb:0,room:'salon',echo:0,echoMs:280,echoFb:35,comp:false,balance:0,mono:false};
+let fx=Object.assign({},FX_DEF,ls.get('fx',{}));fx.eq=(fx.eq&&fx.eq.length===10)?fx.eq:FX_DEF.eq.slice();
+let speed=ls.get('speed',1),keepPitch=ls.get('keepPitch',true);
+const EQ_PRESETS={'Düz':[0,0,0,0,0,0,0,0,0,0],'Bas':[7,6,4,2,0,0,0,0,0,0],'Vokal':[-2,-2,-1,1,3,4,3,1,0,-1],'Tiz':[0,0,0,0,0,1,2,4,5,6],'Rock':[5,4,2,-1,-2,-1,1,3,4,5],'Pop':[-1,1,3,4,3,1,-1,-1,1,2],'Akustik':[3,3,2,1,1,1,2,3,3,2],'Elektronik':[5,4,1,0,-2,1,1,2,4,5],'Klasik':[4,3,2,1,-1,-1,0,2,3,4]};
+const FX_PRESETS={
+ 'Kapalı':{pre:0,bass:0,crystal:0,width:100,surround:0,reverb:0,echo:0,comp:false,mono:false},
+ 'Konser salonu':{bass:3,crystal:20,width:130,surround:0,reverb:32,room:'salon',echo:0,comp:false},
+ 'Stüdyo':{bass:2,crystal:35,width:115,surround:0,reverb:8,room:'oda',echo:0,comp:true},
+ 'Canlı sahne':{bass:4,crystal:45,width:150,surround:0,reverb:22,room:'salon',echo:12,echoMs:120,echoFb:20,comp:false},
+ 'Geniş kulaklık':{bass:3,crystal:25,width:175,surround:0,reverb:10,room:'oda',echo:0,comp:false},
+ '8D ses':{width:110,surround:85,surSpeed:0.12,reverb:24,room:'salon',echo:0,comp:false},
+ 'Gece modu':{bass:2,crystal:0,width:100,surround:0,reverb:0,echo:0,comp:true,pre:3},
+ 'Katedral':{bass:2,crystal:10,width:140,surround:0,reverb:55,room:'katedral',echo:0,comp:false}
+};
+const ROOMS={oda:.8,salon:2,katedral:4.2};
+let ctx=null,N={},analyser=null,roomBuilt='';
+function impulse(sec){const r=ctx.sampleRate,len=Math.floor(r*sec),b=ctx.createBuffer(2,len,r);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.8)}return b}
+function initAudio(){if(ctx)return true;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;ctx=new AC();
+ const g=v=>{const n=ctx.createGain();n.gain.value=v;return n},bq=(type,f,q)=>{const n=ctx.createBiquadFilter();n.type=type;n.frequency.value=f;if(q)n.Q.value=q;return n};
+ const src=ctx.createMediaElementSource(audio);
+ N.pre=g(1);N.pre.channelCount=2;N.pre.channelCountMode='explicit';N.pre.channelInterpretation='speakers';
+ N.eq=BANDS.map((f,i)=>{const b=bq(i===0?'lowshelf':i===9?'highshelf':'peaking',f,1.1);b.gain.value=0;return b});
+ N.bass=bq('lowshelf',90);N.bass.gain.value=0;
+ N.cIn=g(1);N.cHP=bq('highpass',2800,.7);N.cWS=ctx.createWaveShaper();N.cAmt=g(0);N.cOut=g(1);
+ const k=8,cv=new Float32Array(2048);for(let i=0;i<2048;i++){const x=i/1024-1;cv[i]=(1+k)*x/(1+k*Math.abs(x))}N.cWS.curve=cv;N.cWS.oversample='2x';
+ N.split=ctx.createChannelSplitter(2);N.merge=ctx.createChannelMerger(2);N.ll=g(1);N.lr=g(0);N.rl=g(0);N.rr=g(1);
+ N.pan=ctx.createStereoPanner?ctx.createStereoPanner():null;N.lfo=ctx.createOscillator();N.lfoG=g(0);N.lfo.frequency.value=.15;
+ N.dry=g(1);N.conv=ctx.createConvolver();N.rev=g(0);N.dly=ctx.createDelay(2);N.fb=g(0);N.ech=g(0);N.bus=g(1);
+ N.comp=ctx.createDynamicsCompressor();N.lim=ctx.createDynamicsCompressor();N.lim.threshold.value=-1;N.lim.knee.value=0;N.lim.ratio.value=20;N.lim.attack.value=.002;N.lim.release.value=.2;
+ analyser=ctx.createAnalyser();analyser.fftSize=128;analyser.smoothingTimeConstant=.8;
+ let node=src;node.connect(N.pre);node=N.pre;for(const f of N.eq){node.connect(f);node=f}node.connect(N.bass);N.bass.connect(N.cIn);
+ N.cIn.connect(N.cOut);N.cIn.connect(N.cHP);N.cHP.connect(N.cWS);N.cWS.connect(N.cAmt);N.cAmt.connect(N.cOut);
+ N.cOut.connect(N.split);N.split.connect(N.ll,0);N.split.connect(N.lr,0);N.split.connect(N.rl,1);N.split.connect(N.rr,1);
+ N.ll.connect(N.merge,0,0);N.rl.connect(N.merge,0,0);N.lr.connect(N.merge,0,1);N.rr.connect(N.merge,0,1);
+ let st=N.merge;if(N.pan){N.merge.connect(N.pan);N.lfo.connect(N.lfoG);N.lfoG.connect(N.pan.pan);N.lfo.start();st=N.pan}
+ st.connect(N.dry);st.connect(N.conv);st.connect(N.dly);N.dry.connect(N.bus);N.conv.connect(N.rev);N.rev.connect(N.bus);N.dly.connect(N.ech);N.dly.connect(N.fb);N.fb.connect(N.dly);N.ech.connect(N.bus);
+ N.bus.connect(N.comp);N.comp.connect(N.lim);N.lim.connect(analyser);analyser.connect(ctx.destination);
+ applyFx();return true}catch(e){ctx=null;return false}}
+const set=(p,v)=>{try{p.setTargetAtTime(v,ctx.currentTime,.03)}catch(e){p.value=v}};
+const dbToGain=d=>Math.pow(10,d/20);
+function applyFx(){ls.set('fx',fx);if(!ctx)return;const on=fx.on;
+ N.eq.forEach((f,i)=>set(f.gain,on&&fx.eqOn?fx.eq[i]:0));
+ set(N.pre.gain,on?dbToGain(fx.pre):1);set(N.bass.gain,on?fx.bass:0);set(N.cAmt.gain,on?fx.crystal/100*.55:0);
+ const w=on?(fx.mono?0:fx.width/100):1;set(N.ll.gain,(1+w)/2);set(N.rr.gain,(1+w)/2);set(N.lr.gain,(1-w)/2);set(N.rl.gain,(1-w)/2);
+ if(N.pan){set(N.pan.pan,on?fx.balance/100:0);set(N.lfoG.gain,on?fx.surround/100*.9:0);set(N.lfo.frequency,fx.surSpeed)}
+ if(on&&fx.reverb>0&&roomBuilt!==fx.room){N.conv.buffer=impulse(ROOMS[fx.room]||2);roomBuilt=fx.room}
+ set(N.rev.gain,on?fx.reverb/100*1.1:0);set(N.dry.gain,on?1-fx.reverb/100*.35:1);
+ set(N.dly.delayTime,fx.echoMs/1000);set(N.fb.gain,on&&fx.echo?fx.echoFb/100*.85:0);set(N.ech.gain,on?fx.echo/100*.7:0);
+ if(on&&fx.comp){set(N.comp.threshold,-30);set(N.comp.ratio,5);set(N.comp.knee,18);set(N.comp.attack,.004);set(N.comp.release,.25)}else{set(N.comp.threshold,0);set(N.comp.ratio,1)}
+ set(N.lim.ratio,on?20:1);
+}
+function engineOn(){const ok=initAudio();if(ctx&&ctx.state==='suspended')ctx.resume();return ok}
+
+/* ===== Çalma ===== */
+let curUrl=null;
+function playAt(i){if(i<0||i>=queue.length)return;qi=i;const t=byId(queue[i]);if(!t)return;
+ if(fx.on)engineOn();else if(ctx&&ctx.state==='suspended')ctx.resume();
+ if(curUrl)URL.revokeObjectURL(curUrl);curUrl=URL.createObjectURL(t.blob);audio.src=curUrl;applySpeed();
+ audio.play().catch(()=>{});plays[t.id]=(plays[t.id]||0)+1;recent=[t.id,...recent.filter(x=>x!==t.id)].slice(0,20);saveMeta();updateNow();markRows()}
+const shuffleArr=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function playFrom(ids,id,name){if(!ids.length)return;queue=[...ids];queueName=name||'';let i=id?queue.indexOf(id):0;if(i<0)i=0;
+ if(shuffle){const c=queue.splice(i,1)[0];shuffleArr(queue);queue.unshift(c);i=0}playAt(i)}
+function shuffleFrom(ids,name){if(!ids.length)return;shuffle=true;ls.set('shuffle',true);queue=shuffleArr([...ids]);queueName=name||'';playAt(0)}
+function next(auto){if(!queue.length)return;if(auto&&repeat==='one'){audio.currentTime=0;audio.play().catch(()=>{});return}
+ if(qi+1<queue.length)playAt(qi+1);else if(repeat!=='off')playAt(0);else{audio.pause();audio.currentTime=0;updateNow()}}
+function prev(){if(audio.currentTime>3||qi<=0){audio.currentTime=0;return}playAt(qi-1)}
+function toggle(){if(qi<0||!audio.src){playFrom(tracks.map(t=>t.id),null,'Tüm şarkılar');return}
+ if(fx.on)engineOn();else if(ctx&&ctx.state==='suspended')ctx.resume();audio.paused?audio.play().catch(()=>{}):audio.pause()}
+function applySpeed(){audio.playbackRate=speed;try{audio.preservesPitch=keepPitch;audio.webkitPreservesPitch=keepPitch;audio.mozPreservesPitch=keepPitch}catch(e){}}
+audio.addEventListener('ended',()=>{if(sleepEnd){clearSleep();toast('Uyku zamanlayıcı çalmayı durdurdu');updateNow();return}next(true)});
+['play','pause'].forEach(ev=>audio.addEventListener(ev,()=>{updateNow();markRows();if(ev==='play')drawViz()}));
+audio.addEventListener('timeupdate',tick);audio.addEventListener('loadedmetadata',tick);
+audio.addEventListener('error',()=>{if(qi>=0&&audio.getAttribute('src'))toast('Bu dosya bu cihazda çalınamıyor')});
+
+/* ===== Yardımcılar ===== */
+const hue=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h};
+const initials=s=>String(s).split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'♪';
+const artOf=(t,key,label)=>t&&t.art?`<img src="${t.art}" alt="">`:`<span class="gen" style="--h:${hue(key||(t&&t.album)||'')}">${esc(initials(label||(t&&t.title)||''))}</span>`;
+const cur=()=>qi>=0?byId(queue[qi]):null;
+const durOf=ids=>ids.reduce((s,id)=>{const t=byId(id);return s+(t&&isFinite(t.duration)?t.duration:0)},0);
+const group=key=>{const g=new Map();tracks.forEach(t=>{if(!g.has(t[key]))g.set(t[key],[]);g.get(t[key]).push(t)});return g};
+const coverFor=ts=>ts.find(t=>t.art)||ts[0];
+function sorted(arr){const a=[...arr];if(sortBy==='title')a.sort((x,y)=>coll.compare(x.title,y.title));else if(sortBy==='artist')a.sort((x,y)=>coll.compare(x.artist,y.artist)||coll.compare(x.album,y.album));else if(sortBy==='plays')a.sort((x,y)=>(plays[y.id]||0)-(plays[x.id]||0));else a.sort((x,y)=>y.added-x.added);return a}
+
+let L={},LN={};
+function listHTML(key,ids,opt={}){L[key]=ids;LN[key]=opt.name||'';
+ return `<ul class="list" data-list="${key}">${ids.map((id,i)=>{const t=byId(id);if(!t)return'';const c=cur(),on=c&&c.id===id&&(opt.queue?i===qi:true);
+  const lead=opt.num?`<div class="art" style="background:none;display:grid;place-items:center"><span class="num">${i+1}</span>${on?'<span class="vu" style="background:none"><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i></span>':''}</div>`:`<div class="art">${artOf(t)}${on?'<span class="vu"><i></i><i></i><i></i></span>':''}</div>`;
+  const sub=opt.sub==='artist'?esc(t.artist):opt.sub==='album'?esc(t.album):esc(t.artist)+' · '+esc(t.album);
+  const act=opt.queue?`<button class="ib dim" data-qrm="${i}" aria-label="Sıradan çıkar">${I.x}</button>`:`<button class="ib dim" data-more="${id}" data-ctx="${opt.ctx||''}" aria-label="${esc(t.title)} seçenekleri">${I.more}</button>`;
+  return `<li class="swipe">${swActs(id,opt)}<div class="row${on?' on':''}${audio.paused?' paused':''}" data-tid="${id}"${opt.queue?` data-qi="${i}"`:''}>${lead}<div class="meta"><div class="t">${esc(t.title)}</div><div class="s">${sub}</div></div><span class="dur">${fmt(t.duration)}</span>${act}</div></li>`}).join('')}</ul>`}
+function swActs(id,opt){const f=favs.has(id);
+ const l=`<button class="swb" data-sw="fav" style="--c:var(--accent)" aria-label="${f?'Favorilerden çıkar':'Favorilere ekle'}">${f?I.heartF:I.heart}<span>${f?'Çıkar':'Favori'}</span></button>`+(opt.queue?'':`<button class="swb" data-sw="enq" style="--c:var(--sw-blue)" aria-label="Çalan listeye ekle">${I.queue}<span>Sıraya</span></button>`);
+ const r=(opt.queue?'':`<button class="swb" data-sw="pl" style="--c:var(--sw-violet)" aria-label="Çalma listesine ekle">${I.listAdd}<span>Listeye</span></button>`)+`<button class="swb" data-sw="${opt.queue?'qrm':'del'}" style="--c:var(--danger)" aria-label="${opt.queue?'Sıradan çıkar':'Sil'}">${opt.queue?I.x:I.trash}<span>${opt.queue?'Çıkar':'Sil'}</span></button>`;
+ return `<div class="sw-l">${l}</div><div class="sw-r">${r}</div>`}
+function doSw(a,id,qIdx){const t=byId(id);if(!t)return;
+ if(a==='fav'){toggleFav(id);renderPage('none')}
+ else if(a==='enq'){if(qi<0)playFrom([id],id);else if(queue[qi]===id)toast('Bu şarkı zaten çalıyor');else{const i=queue.indexOf(id,qi+1);if(i>-1)queue.splice(i,1);queue.push(id);toast('Çalan listeye eklendi: '+t.title)}}
+ else if(a==='pl')addToPlaylist([id],t.title);
+ else if(a==='del')confirmDel(`“${t.title}” silinsin mi?`,'Şarkı bu cihazdan ve tüm listelerden kaldırılır.',[id]);
+ else if(a==='qrm'){const i=+qIdx;if(i===qi){toast('Çalan şarkı sıradan çıkarılamaz');return}queue.splice(i,1);if(i<qi)qi--;renderPage('none')}}
+/* Kaydırma hareketi */
+let sw=null,openRow=null,suppress=0;
+function closeOpen(){if(openRow){openRow.style.transform='';const li=openRow.parentElement;setTimeout(()=>li&&li.classList.remove('show-l','show-r','full'),280);openRow=null}}
+const sideW=(li,side)=>li.querySelectorAll(side==='l'?'.sw-l .swb':'.sw-r .swb').length*76;
+document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;
+ if(openRow&&!e.target.closest('.swb')){closeOpen();suppress=Date.now();sw=null;return}
+ const r=e.target.closest('.swipe>.row');if(!r)return;sw={r,li:r.parentElement,x0:e.clientX,y0:e.clientY,x:0,on:false,id:e.pointerId}});
+document.addEventListener('pointermove',e=>{if(!sw||e.pointerId!==sw.id)return;const dx=e.clientX-sw.x0,dy=e.clientY-sw.y0;
+ if(!sw.on){if(Math.abs(dx)>9&&Math.abs(dx)>Math.abs(dy)*1.3){sw.on=true;sw.r.style.transition='none';try{sw.r.setPointerCapture(e.pointerId)}catch(_){}}else{if(Math.abs(dy)>10)sw=null;return}}
+ const W=sw.li.offsetWidth;let x=dx;if(Math.abs(x)>W*.85)x=Math.sign(x)*(W*.85+(Math.abs(x)-W*.85)*.2);sw.x=x;
+ sw.r.style.transform=`translateX(${x}px)`;sw.li.classList.toggle('show-l',x>0);sw.li.classList.toggle('show-r',x<0);sw.li.classList.toggle('full',Math.abs(x)>W*.55);e.preventDefault()},{passive:false});
+function endSwipe(){if(!sw)return;const s=sw;sw=null;if(!s.on)return;suppress=Date.now();s.r.style.transition='';const W=s.li.offsetWidth,x=s.x,tid=s.r.dataset.tid,q=s.r.dataset.qi;
+ if(Math.abs(x)>W*.55){const a=x>0?'fav':(q!=null?'qrm':'del');s.r.style.transform=`translateX(${Math.sign(x)*W}px)`;setTimeout(()=>{s.r.style.transform='';s.li.classList.remove('show-l','show-r','full');doSw(a,tid,q)},200);return}
+ s.li.classList.remove('full');
+ if(x>48){s.r.style.transform=`translateX(${sideW(s.li,'l')}px)`;openRow=s.r}
+ else if(x<-48){s.r.style.transform=`translateX(${-sideW(s.li,'r')}px)`;openRow=s.r}
+ else{s.r.style.transform='';setTimeout(()=>s.li.classList.remove('show-l','show-r'),280)}}
+document.addEventListener('pointerup',endSwipe);document.addEventListener('pointercancel',endSwipe);
+function markRows(){const c=cur();document.querySelectorAll('.row[data-tid]').forEach(r=>{const on=c&&r.dataset.tid===c.id&&(r.dataset.qi==null||+r.dataset.qi===qi);r.classList.toggle('on',!!on);r.classList.toggle('paused',audio.paused);
+ const a=r.querySelector('.art');if(!a)return;const vu=a.querySelector('.vu');if(on&&!vu){const num=a.querySelector('.num');a.insertAdjacentHTML('beforeend',num?'<span class="vu" style="background:none"><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i></span>':'<span class="vu"><i></i><i></i><i></i></span>')}if(!on&&vu)vu.remove()})}
+const card=(go,k,ts,title,sub,round)=>`<button class="card" data-go="${go}" data-k="${esc(k)}"><div class="art${round?' round':''}">${coverFor(ts).art?`<img src="${coverFor(ts).art}" alt="">`:`<span class="gen" style="--h:${hue(k)}">${esc(initials(k))}</span>`}</div><div><b>${esc(title)}</b><span>${esc(sub)}</span></div></button>`;
+const navRow=(go,k,artHtml,title,sub,round)=>`<button class="navrow" data-go="${go}" data-k="${esc(k)}"><div class="art${round?' round':''}">${artHtml}</div><div class="meta"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><span class="chev">${I.chev}</span></button>`;
+const emptyBox=(h,p,btn)=>`<div class="empty"><h3>${h}</h3><p>${p}</p>${btn?`<button class="btn pri" data-act="addMenu">${I.plus}Şarkı ekle</button>`:''}</div>`;
+const addBtn=`<button class="ib" data-act="addMenu" aria-label="Şarkı ekle" title="Şarkı ekle">${I.plus}</button>`;
+
+/* ===== Sayfalar ===== */
+const TABS=[['home','Ana Sayfa',I.home],['library','Kütüphane',I.lib],['search','Ara',I.search],['lists','Listeler',I.lists],['fx','Efektler',I.fx]];
+let tab='home',stack=[{p:'home'}],selMode=false,sel=new Set(),searchQ='';
+const PAGES={};
+
+PAGES.home=()=>{const h=new Date().getHours(),gr=h<5?'İyi geceler':h<12?'Günaydın':h<18?'İyi günler':h<23?'İyi akşamlar':'İyi geceler';
+ const al=group('album'),ar=group('artist');let x=`<div class="brandmark">Riffwell</div><h1 class="big-ttl">${gr}</h1>${IOS&&!navigator.standalone&&!matchMedia('(display-mode: standalone)').matches?'<p class="install">Tam ekran uygulama için alttaki Paylaş düğmesine, sonra “Ana Ekrana Ekle”ye dokun.</p>':''}`;
+ if(!tracks.length)return {title:'Ana Sayfa',acts:addBtn,html:x+emptyBox('Müziğini ekle','MP3, M4A, FLAC veya WAV dosyalarını Dosyalar uygulamasından ya da iCloud Drive\'dan seç.',true)};
+ x+=`<div class="stats"><div class="stat"><b>${tracks.length}</b><span>şarkı</span></div><div class="stat"><b>${al.size}</b><span>albüm</span></div><div class="stat"><b>${ar.size}</b><span>sanatçı</span></div><div class="stat"><b>${fmtLong(durOf(tracks.map(t=>t.id)))}</b><span>toplam</span></div></div>`;
+ const c=cur(),last=c||byId(recent[0]);
+ x+=`<div class="hero"><div><h3>${last?'Kaldığın yerden':'Karışık dinle'}</h3><p>${last?esc(last.title)+' · '+esc(last.artist):'Tüm kütüphaneden rastgele bir sıra'}</p></div><div class="btn-row">${last&&!c?`<button class="btn pri" data-act="resume">${I.play}Devam</button>`:''}<button class="btn ${last&&!c?'':'pri'}" data-act="shuffleAll">${I.shuf}Karıştır</button></div></div>`;
+ const newest=sorted(tracks).slice(0,10);
+ x+=`<div class="sec"><div class="sec-h"><h2>Son eklenenler</h2><button class="link" data-go="songs">Tümü</button></div>${listHTML('new',newest.slice(0,4).map(t=>t.id),{name:'Son eklenenler'})}</div>`;
+ const top=Object.entries(plays).filter(([id,n])=>byId(id)&&n>0).sort((a,b)=>b[1]-a[1]).slice(0,5).map(e=>e[0]);
+ if(top.length)x+=`<div class="sec"><div class="sec-h"><h2>En çok dinlenenler</h2></div>${listHTML('top',top,{name:'En çok dinlenenler',num:true})}</div>`;
+ const aks=[...al.keys()].sort(coll.compare);
+ x+=`<div class="sec"><div class="sec-h"><h2>Albümler</h2><button class="link" data-go="albums">Tümü</button></div><div class="hscroll">${aks.slice(0,12).map(k=>card('album',k,al.get(k),k,al.get(k)[0].artist)).join('')}</div></div>`;
+ x+=`<div class="sec"><div class="tiles">
+  <button class="tile" data-go="favs"><span class="ic">${I.heartF}</span><div><b>Favoriler</b><span>${[...favs].filter(byId).length} şarkı</span></div></button>
+  <button class="tile" data-tab="fx"><span class="ic">${I.fx}</span><div><b>Ses efektleri</b><span>${fx.on?'Açık':'Kapalı'}</span></div></button>
+  <button class="tile" data-tab="lists"><span class="ic">${I.lists}</span><div><b>Çalma listeleri</b><span>${playlists.length} liste</span></div></button>
+  <button class="tile" data-go="files"><span class="ic">${I.folder}</span><div><b>Dosyalar</b><span>Yönet ve sil</span></div></button></div></div>`;
+ return {title:'Ana Sayfa',acts:addBtn,html:x}};
+
+PAGES.library=()=>{const al=group('album'),ar=group('artist');
+ const x=`<h1 class="big-ttl">Kütüphane</h1><div class="group">
+ ${navRow('songs','',`<span class="gen" style="--h:330">${I.note.replace('<svg','<svg width="22" height="22"')}</span>`,'Şarkılar',tracks.length+' şarkı')}
+ ${navRow('albums','',`<span class="gen" style="--h:200">${I.disc.replace('<svg','<svg width="22" height="22"')}</span>`,'Albümler',al.size+' albüm')}
+ ${navRow('artists','',`<span class="gen" style="--h:270">${I.user.replace('<svg','<svg width="22" height="22"')}</span>`,'Sanatçılar',ar.size+' sanatçı')}
+ ${navRow('favs','',`<span class="gen" style="--h:345">${I.heartF.replace('<svg','<svg width="22" height="22"')}</span>`,'Favoriler',[...favs].filter(byId).length+' şarkı')}
+ ${navRow('recent','',`<span class="gen" style="--h:40">${I.clock.replace('<svg','<svg width="22" height="22"')}</span>`,'Son çalınanlar',recent.filter(byId).length+' şarkı')}
+ ${navRow('queue','',`<span class="gen" style="--h:160">${I.queue.replace('<svg','<svg width="22" height="22"')}</span>`,'Sıradakiler',queue.length?(queue.length-qi-1)+' şarkı sırada':'Boş')}
+ ${navRow('files','',`<span class="gen" style="--h:220">${I.folder.replace('<svg','<svg width="22" height="22"')}</span>`,'Dosya yöneticisi','Boyut, biçim ve toplu silme')}</div>`;
+ return {title:'Kütüphane',acts:addBtn,html:x}};
+
+PAGES.songs=()=>{const ids=sorted(tracks).map(t=>t.id);
+ const x=`<h1 class="big-ttl">Şarkılar</h1><div class="toolbar"><span class="count">${ids.length} şarkı · ${fmt(durOf(ids))}</span><select id="sort" aria-label="Sırala">${[['added','Son eklenen'],['title','Ada göre'],['artist','Sanatçıya göre'],['plays','En çok çalınan']].map(([k,n])=>`<option value="${k}"${sortBy===k?' selected':''}>${n}</option>`).join('')}</select></div>
+ <div class="btn-row" style="margin-bottom:12px"><button class="btn pri" data-act="playL" data-l="songs">${I.play}Çal</button><button class="btn" data-act="shufL" data-l="songs">${I.shuf}Karıştır</button></div>
+ ${ids.length?listHTML('songs',ids,{name:'Tüm şarkılar'}):emptyBox('Henüz şarkı yok','Sağ üstteki + ile şarkı ekle.',true)}`;
+ return {title:'Şarkılar',acts:addBtn,html:x}};
+
+PAGES.albums=()=>{const al=group('album'),ks=[...al.keys()].sort(coll.compare);
+ return {title:'Albümler',html:`<h1 class="big-ttl">Albümler</h1>${ks.length?`<div class="grid">${ks.map(k=>card('album',k,al.get(k),k,al.get(k)[0].artist+' · '+al.get(k).length+' şarkı')).join('')}</div>`:emptyBox('Albüm yok','Şarkı eklediğinde albümler burada görünür.',true)}`}};
+
+PAGES.album=({k})=>{const ts=tracks.filter(t=>t.album===k);if(!ts.length)return {title:k,html:emptyBox('Albüm boş','Bu albümdeki şarkılar silinmiş.')};const ids=ts.map(t=>t.id),c=coverFor(ts),arts=[...new Set(ts.map(t=>t.artist))];
+ return {title:k,acts:`<button class="ib" data-act="groupMenu" data-type="album" data-k="${esc(k)}" aria-label="Albüm seçenekleri">${I.more}</button>`,
+  html:`<div class="dhead"><div class="art">${c.art?`<img src="${c.art}" alt="">`:`<span class="gen" style="--h:${hue(k)}">${esc(initials(k))}</span>`}</div><h1>${esc(k)}</h1>
+  ${arts.length===1?`<button class="by" data-go="artist" data-k="${esc(arts[0])}">${esc(arts[0])}</button>`:`<span class="s">${arts.length} sanatçı</span>`}
+  <span class="m">${ts.length} şarkı · ${fmt(durOf(ids))}</span>
+  <div class="btn-row"><button class="btn pri" data-act="playL" data-l="album">${I.play}Çal</button><button class="btn" data-act="shufL" data-l="album">${I.shuf}Karıştır</button></div></div>
+  ${listHTML('album',ids,{name:k,num:true,sub:'artist'})}`}};
+
+PAGES.artists=()=>{const ar=group('artist'),ks=[...ar.keys()].sort(coll.compare);
+ return {title:'Sanatçılar',html:`<h1 class="big-ttl">Sanatçılar</h1>${ks.length?'<div class="group">':''}${ks.map(k=>{const ts=ar.get(k),c=coverFor(ts);return navRow('artist',k,c.art?`<img src="${c.art}" alt="">`:`<span class="gen" style="--h:${hue(k)}">${esc(initials(k))}</span>`,k,ts.length+' şarkı · '+new Set(ts.map(t=>t.album)).size+' albüm',true)}).join('')+(ks.length?'</div>':'')||emptyBox('Sanatçı yok','Şarkı eklediğinde sanatçılar burada görünür.',true)}`}};
+
+PAGES.artist=({k})=>{const ts=tracks.filter(t=>t.artist===k);if(!ts.length)return {title:k,html:emptyBox('Sanatçı boş','Bu sanatçının şarkıları silinmiş.')};const ids=sorted(ts).map(t=>t.id),al=new Map();ts.forEach(t=>{if(!al.has(t.album))al.set(t.album,[]);al.get(t.album).push(t)});const c=coverFor(ts);
+ return {title:k,acts:`<button class="ib" data-act="groupMenu" data-type="artist" data-k="${esc(k)}" aria-label="Sanatçı seçenekleri">${I.more}</button>`,
+  html:`<div class="dhead"><div class="art round">${c.art?`<img src="${c.art}" alt="">`:`<span class="gen" style="--h:${hue(k)}">${esc(initials(k))}</span>`}</div><h1>${esc(k)}</h1><span class="m">${ts.length} şarkı · ${al.size} albüm · ${fmt(durOf(ids))}</span>
+  <div class="btn-row"><button class="btn pri" data-act="playL" data-l="artist">${I.play}Çal</button><button class="btn" data-act="shufL" data-l="artist">${I.shuf}Karıştır</button></div></div>
+  <div class="sec-h"><h2>Albümler</h2></div><div class="hscroll">${[...al.keys()].map(a=>card('album',a,al.get(a),a,al.get(a).length+' şarkı')).join('')}</div>
+  <div class="sec"><div class="sec-h"><h2>Şarkılar</h2></div>${listHTML('artist',ids,{name:k,sub:'album'})}</div>`}};
+
+PAGES.favs=()=>{const ids=tracks.filter(t=>favs.has(t.id)).map(t=>t.id);
+ return {title:'Favoriler',html:`<h1 class="big-ttl">Favoriler</h1>${ids.length?`<div class="btn-row" style="margin-bottom:12px"><button class="btn pri" data-act="playL" data-l="favs">${I.play}Çal</button><button class="btn" data-act="shufL" data-l="favs">${I.shuf}Karıştır</button></div>${listHTML('favs',ids,{name:'Favoriler'})}`:emptyBox('Favori yok','Çalarken kalbe dokunarak ya da şarkının ⋯ menüsünden favori ekleyebilirsin.')}`}};
+
+PAGES.recent=()=>{const ids=recent.filter(byId);return {title:'Son çalınanlar',html:`<h1 class="big-ttl">Son çalınanlar</h1>${ids.length?listHTML('recent',ids,{name:'Son çalınanlar'}):emptyBox('Henüz bir şey çalmadın','Çaldığın şarkılar burada listelenir.')}`}};
+
+PAGES.queue=()=>{if(!queue.length)return {title:'Sıradakiler',html:`<h1 class="big-ttl">Sıradakiler</h1>${emptyBox('Sıra boş','Bir şarkı çaldığında sıradakiler burada görünür.')}`};
+ const rest=queue.slice(qi+1);
+ return {title:'Sıradakiler',acts:`<button class="ib" data-act="clearQ" aria-label="Sırayı temizle">${I.trash}</button>`,html:`<h1 class="big-ttl">Sıradakiler</h1><p class="sub-ttl">${esc(queueName||'Karışık')} · ${rest.length} şarkı · ${fmt(durOf(rest))} kaldı</p>${listHTML('q',queue,{queue:true})}`}};
+
+PAGES.files=()=>{const ts=[...tracks].sort((a,b)=>(b.size||0)-(a.size||0)),total=ts.reduce((s,t)=>s+(t.size||0),0);
+ let x=`<h1 class="big-ttl">Dosyalar</h1><p class="sub-ttl">${ts.length} dosya · ${fmtSize(total)}<span id="quota"></span></p>`;
+ x+=`<div class="toolbar"><div class="btn-row" style="flex:1">${selMode?`<button class="btn sm" data-act="selAll">${sel.size===ts.length&&ts.length?'Seçimi kaldır':'Tümünü seç'}</button><button class="btn sm danger" data-act="delSel"${sel.size?'':' disabled'}>${I.trash}Sil (${sel.size})</button><button class="btn sm" data-act="selOff">Bitti</button>`:`<button class="btn sm" data-act="selOn">${I.check}Seç</button><button class="btn sm danger" data-act="delAll"${ts.length?'':' disabled'}>${I.trash}Tümünü sil</button>`}</div></div>`;
+ x+=ts.length?`<ul class="list">${ts.map(t=>`<li class="row${selMode?' sel':''}" data-file="${t.id}">${selMode?`<input type="checkbox" id="f_${t.id}" ${sel.has(t.id)?'checked':''} aria-label="${esc(t.fname||t.title)} seç">`:''}<div class="art">${artOf(t)}</div><div class="meta"><div class="t">${esc(t.fname||t.title)}</div><div class="s">${esc(t.ext)} · ${fmt(t.duration)} · ${esc(t.artist)}</div></div><span class="dur">${fmtSize(t.size)}</span>${selMode?'':`<button class="ib dim" data-delone="${t.id}" aria-label="${esc(t.title)} sil">${I.trash}</button>`}</li>`).join('')}</ul>`:emptyBox('Dosya yok','Eklediğin şarkılar bu cihazda saklanır ve burada listelenir.',true);
+ if(hiddenDemos.size)x+=`<div class="sec"><button class="btn" data-act="restoreDemos">${I.restore}Örnek şarkıları geri getir</button></div>`;
+ return {title:'Dosyalar',acts:addBtn,html:x,after:()=>{try{navigator.storage&&navigator.storage.estimate&&navigator.storage.estimate().then(e=>{const q=$('#quota');if(q&&e.quota)q.textContent=' · cihazda '+fmtSize(e.quota-e.usage)+' boş alan'})}catch(e){}}}};
+
+PAGES.search=()=>({title:'Ara',html:`<h1 class="big-ttl">Ara</h1><div class="searchbox">${I.search}<input id="q" type="search" placeholder="Şarkı, sanatçı, albüm veya liste" autocomplete="off" value="${esc(searchQ)}" aria-label="Ara"></div><div id="results"></div>`,after:()=>{renderResults()}});
+function renderResults(){const box=$('#results');if(!box)return;const q=searchQ.toLocaleLowerCase('tr');
+ if(!q){const al=group('album'),ks=[...al.keys()].sort(coll.compare);box.innerHTML=`<div class="sec-h"><h2>Göz at</h2></div><div class="grid">${ks.map(k=>card('album',k,al.get(k),k,al.get(k)[0].artist)).join('')}</div>`;return}
+ const m=s=>String(s).toLocaleLowerCase('tr').includes(q);
+ const ts=tracks.filter(t=>m(t.title)||m(t.artist)||m(t.album)).map(t=>t.id),al=group('album'),ar=group('artist');
+ const aks=[...al.keys()].filter(m),rks=[...ar.keys()].filter(m),pls=playlists.filter(p=>m(p.name));
+ let h='';
+ if(rks.length)h+=`<div class="sec-h"><h2>Sanatçılar</h2></div><div class="group">${rks.map(k=>{const c=coverFor(ar.get(k));return navRow('artist',k,c.art?`<img src="${c.art}" alt="">`:`<span class="gen" style="--h:${hue(k)}">${esc(initials(k))}</span>`,k,ar.get(k).length+' şarkı',true)}).join('')}</div>`;
+ if(aks.length)h+=`<div class="sec"><div class="sec-h"><h2>Albümler</h2></div><div class="hscroll">${aks.map(k=>card('album',k,al.get(k),k,al.get(k)[0].artist)).join('')}</div></div>`;
+ if(pls.length)h+=`<div class="sec"><div class="sec-h"><h2>Listeler</h2></div><div class="group">${pls.map(p=>navRow('playlist',p.id,`<span class="gen" style="--h:${hue(p.name)}">${esc(initials(p.name))}</span>`,p.name,p.ids.filter(byId).length+' şarkı')).join('')}</div></div>`;
+ if(ts.length)h+=`<div class="sec"><div class="sec-h"><h2>Şarkılar</h2></div>${listHTML('search',ts,{name:'Arama: '+searchQ})}</div>`;
+ box.innerHTML=h||emptyBox('Sonuç yok','“'+esc(searchQ)+'” ile eşleşen bir şey bulunamadı.')}
+
+PAGES.lists=()=>({title:'Listeler',html:`<h1 class="big-ttl">Listeler</h1><form class="field" id="plForm" style="margin-bottom:14px"><input id="plName" placeholder="Yeni çalma listesi adı" maxlength="60" aria-label="Yeni çalma listesi adı"><button class="btn pri" type="submit">${I.plus}Oluştur</button></form>
+ <div class="group">${navRow('favs','',`<span class="gen" style="--h:345">${I.heartF.replace('<svg','<svg width="22" height="22"')}</span>`,'Favoriler',[...favs].filter(byId).length+' şarkı')}
+ ${playlists.map(p=>{const ts=p.ids.map(byId).filter(Boolean);return navRow('playlist',p.id,ts.find(t=>t.art)?`<img src="${ts.find(t=>t.art).art}" alt="">`:`<span class="gen" style="--h:${hue(p.name)}">${esc(initials(p.name))}</span>`,p.name,ts.length+' şarkı · '+fmt(durOf(p.ids)))}).join('')}</div>
+ ${playlists.length?'':'<p class="sub-ttl" style="margin-top:14px">Yukarıdan bir liste oluştur, sonra şarkıların ⋯ menüsünden ekle.</p>'}`});
+
+PAGES.playlist=({k})=>{const p=playlists.find(x=>x.id===k);if(!p)return {title:'Liste',html:emptyBox('Liste bulunamadı','Bu liste silinmiş olabilir.')};const ids=p.ids.filter(byId),ts=ids.map(byId);
+ return {title:p.name,acts:`<button class="ib" data-act="plMenu" data-k="${p.id}" aria-label="Liste seçenekleri">${I.more}</button>`,
+  html:`<div class="dhead"><div class="art">${ts.find(t=>t.art)?`<img src="${ts.find(t=>t.art).art}" alt="">`:`<span class="gen" style="--h:${hue(p.name)}">${esc(initials(p.name))}</span>`}</div><h1>${esc(p.name)}</h1><span class="m">${ids.length} şarkı · ${fmt(durOf(ids))}</span>
+  ${ids.length?`<div class="btn-row"><button class="btn pri" data-act="playL" data-l="pl">${I.play}Çal</button><button class="btn" data-act="shufL" data-l="pl">${I.shuf}Karıştır</button></div>`:''}</div>
+  ${ids.length?listHTML('pl',ids,{name:p.name,ctx:'pl:'+p.id}):emptyBox('Liste boş','Şarkıların ⋯ menüsünden “Listeye ekle”yi seç.')}`}};
+
+PAGES.fx=()=>{const sl=(id,label,min,max,step,val,out)=>`<label class="sl" for="${id}"><span>${label}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"><output id="${id}_o">${out}</output></label>`;
+ const curPre=Object.keys(FX_PRESETS).find(k=>{const p=FX_PRESETS[k];return Object.keys(p).every(x=>fx[x]===p[x])});
+ const curEq=Object.keys(EQ_PRESETS).find(k=>EQ_PRESETS[k].every((v,i)=>v===fx.eq[i]));
+ const sw=(id,on,label)=>`<span class="sw"><input type="checkbox" id="${id}" ${on?'checked':''} aria-label="${label}"><span></span></span>`;
+ return {title:'Efektler',html:`<h1 class="big-ttl">Ses efektleri</h1>
+ <div class="fxcard master"><div class="fxh"><div><b>Ses motoru</b><small>${fx.on?'Efektler uygulanıyor':'Kapalı: ses olduğu gibi çalar'}</small></div>${sw('fxOn',fx.on,'Ses efektleri')}</div>
+ <div class="chips">${Object.keys(FX_PRESETS).map(k=>`<button class="chip" data-fxp="${k}" aria-pressed="${fx.on&&k===curPre}">${k}</button>`).join('')}</div>
+ ${IOS?'<p class="warn">iPhone notu: Ses motoru açıkken ekran kilitlenince iOS sesi durdurabilir. Kilit ekranında dinlerken kapalı tut.</p>':''}</div>
+ <div class="${fx.on?'':'fxoff'}"><div class="fxbody">
+ <div class="fxcard"><div class="fxh"><div><b>10 bantlı ekolayzır</b><small>${curEq||'Özel'}</small></div>${sw('eqOn',fx.eqOn,'Ekolayzır')}</div>
+  <svg class="eqcurve" id="eqcurve" viewBox="0 0 300 84" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <div class="eqcols">${BANDS.map((f,i)=>`<label class="eqcol" for="b${i}"><output id="b${i}_o">${fx.eq[i]>0?'+':''}${fx.eq[i]}</output><span class="slot"><input type="range" id="b${i}" min="-12" max="12" step="1" value="${fx.eq[i]}" aria-label="${f>=1000?f/1000+' kHz':f+' Hz'}"></span><span>${f>=1000?f/1000+'k':f}</span></label>`).join('')}</div>
+  <div class="chips">${Object.keys(EQ_PRESETS).map(k=>`<button class="chip" data-eqp="${k}" aria-pressed="${k===curEq}">${k}</button>`).join('')}</div></div>
+ <div class="fxcard"><div class="fxh"><div><b>Güç ve ton</b><small>Bas, netlik ve ses yüksekliği</small></div></div>
+  ${sl('bass','Bas güçlendir',0,12,1,fx.bass,'+'+fx.bass+' dB')}
+  ${sl('crystal','Kristalize',0,100,5,fx.crystal,fx.crystal+'%')}
+  ${sl('pre','Ön kazanç',-6,9,1,fx.pre,(fx.pre>0?'+':'')+fx.pre+' dB')}
+  <div class="fxh"><div><b style="font-size:14px">Dinamik sıkıştırma</b><small>Sessiz yerleri yükseltir, sert tepeleri yumuşatır</small></div>${sw('comp',fx.comp,'Dinamik sıkıştırma')}</div></div>
+ <div class="fxcard"><div class="fxh"><div><b>Uzam</b><small>Stereo genişlik, 3D döngü ve denge</small></div></div>
+  ${sl('width','Stereo genişlik',0,200,5,fx.width,fx.width+'%')}
+  ${sl('surround','3D döngü (8D)',0,100,5,fx.surround,fx.surround+'%')}
+  ${sl('surSpeed','Döngü hızı',.05,.6,.01,fx.surSpeed,fx.surSpeed.toFixed(2)+' Hz')}
+  ${sl('balance','Denge',-100,100,5,fx.balance,fx.balance===0?'Orta':(fx.balance<0?'S ':'Sğ ')+Math.abs(fx.balance))}
+  <div class="fxh"><div><b style="font-size:14px">Mono</b><small>İki kanalı birleştirir, tek kulaklık için</small></div>${sw('mono',fx.mono,'Mono')}</div></div>
+ <div class="fxcard"><div class="fxh"><div><b>Ortam</b><small>Yankı (reverb) ve eko</small></div></div>
+  <div class="chips">${[['oda','Oda'],['salon','Konser salonu'],['katedral','Katedral']].map(([k,n])=>`<button class="chip" data-room="${k}" aria-pressed="${fx.room===k}">${n}</button>`).join('')}</div>
+  ${sl('reverb','Yankı miktarı',0,100,5,fx.reverb,fx.reverb+'%')}
+  ${sl('echo','Eko miktarı',0,100,5,fx.echo,fx.echo+'%')}
+  ${sl('echoMs','Eko gecikmesi',60,800,10,fx.echoMs,fx.echoMs+' ms')}
+  ${sl('echoFb','Eko tekrarı',0,90,5,fx.echoFb,fx.echoFb+'%')}</div>
+ </div></div>
+ <div class="sec"><button class="btn" data-act="fxReset">${I.restore}Tüm efektleri sıfırla</button></div>`,after:drawCurve}};
+
+function drawCurve(){const s=$('#eqcurve');if(!s)return;const pts=fx.eq.map((v,i)=>[i/9*300,42-v/12*36]);let d=`M0 ${pts[0][1]}`;for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],mx=(x0+x1)/2;d+=` C${mx} ${y0} ${mx} ${y1} ${x1} ${y1}`}
+ s.innerHTML=`<line x1="0" y1="42" x2="300" y2="42" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/><path d="${d} L300 84 L0 84Z" fill="var(--accent-soft)" opacity=".8"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`}
+
+/* ===== Gezinme ===== */
+function renderTabs(){const b=([k,n,ic])=>`<button class="tab" data-tab="${k}"${tab===k?' aria-current="page"':''}>${ic}<span>${n}</span></button>`;
+ $('#tabs').innerHTML=`<div class="tabcap">${TABS.filter(t=>t[0]!=='search').map(b).join('')}</div><button class="tabsearch" data-tab="search" aria-label="Ara"${tab==='search'?' aria-current="page"':''}>${I.search}</button>`}
+function renderPage(dir){const top=stack[stack.length-1];L={};LN={};const r=(PAGES[top.p]||PAGES.home)(top);
+ const root=stack.length===1;$('#hdr').classList.toggle('root',root);
+ $('#hdrL').innerHTML=root?'':`<button class="ib" data-act="back" aria-label="Geri">${I.back}</button>`;
+ $('#hdrT').textContent=r.title||'';$('#hdrR').innerHTML=r.acts||'';
+ const pg=$('#page');pg.className='page';pg.innerHTML=r.html;if(dir==='fwd'||dir==='back'){void pg.offsetWidth;pg.classList.add(dir)}
+ openRow=null;if(r.after)r.after();renderTabs();onScroll();paintRanges(pg);
+ if(document.querySelector('.swipe')&&!ls.get('swHint',false)){ls.set('swHint',true);setTimeout(()=>toast('İpucu: Şarkıları sağa veya sola kaydır',4200),700)}}
+function go(p,k){stack[stack.length-1].y=scrollY;if(p!=='files'){selMode=false;sel.clear()}stack.push({p,k});renderPage('fwd');scrollTo(0,0)}
+function back(){if(stack.length<2)return;stack.pop();selMode=false;sel.clear();renderPage('back');const y=stack[stack.length-1].y||0;requestAnimationFrame(()=>scrollTo(0,y))}
+function setTab(t){if(tab===t&&stack.length===1){scrollTo({top:0,behavior:'smooth'});return}tab=t;stack=[{p:t}];selMode=false;sel.clear();renderPage('none');scrollTo(0,0)}
+function paintRanges(root){(root||document).querySelectorAll('input[type=range]').forEach(paintRange)}
+function paintRange(el){const mn=+el.min||0,mx=+el.max||100;el.style.setProperty('--p',((+el.value-mn)/(mx-mn)*100)+'%')}
+function onScroll(){$('#hdr').classList.toggle('scrolled',scrollY>40)}
+addEventListener('scroll',onScroll,{passive:true});
+
+/* ===== Olaylar ===== */
+document.addEventListener('click',e=>{const el=e.target;
+ const tb=el.closest('[data-tab]');if(tb){closeNp();closeSheet();setTab(tb.dataset.tab);return}
+ if(!el.closest('#page')&&!el.closest('#hdr'))return;
+ const swb=el.closest('[data-sw]');if(swb){const r=swb.closest('.swipe').querySelector('.row');closeOpen();doSw(swb.dataset.sw,r.dataset.tid,r.dataset.qi);return}
+ if(Date.now()-suppress<400)return;
+ const more=el.closest('[data-more]');if(more){trackMenu(more.dataset.more,more.dataset.ctx);return}
+ const qrm=el.closest('[data-qrm]');if(qrm){const i=+qrm.dataset.qrm;if(i===qi){toast('Çalan şarkı sıradan çıkarılamaz');return}queue.splice(i,1);if(i<qi)qi--;renderPage('none');return}
+ const dl=el.closest('[data-delone]');if(dl){const t=byId(dl.dataset.delone);confirmDel(`“${t.title}” silinsin mi?`,'Dosya bu cihazdan ve tüm listelerden kaldırılır.',[t.id]);return}
+ const ac=el.closest('[data-act]');if(ac){act(ac.dataset.act,ac);return}
+ const g=el.closest('[data-go]');if(g){go(g.dataset.go,g.dataset.k);return}
+ const fr=el.closest('[data-file]');if(fr&&selMode){const id=fr.dataset.file;if(el.tagName!=='INPUT'){const cb=fr.querySelector('input');cb.checked=!cb.checked}sel.has(id)?sel.delete(id):sel.add(id);renderPage('none');return}
+ if(fr){const t=byId(fr.dataset.file);playFrom([t.id],t.id,'Dosyalar');return}
+ const row=el.closest('.row[data-tid]');if(row){if(row.dataset.qi!=null){playAt(+row.dataset.qi);return}const key=row.closest('[data-list]').dataset.list,c=cur();
+  if(c&&c.id===row.dataset.tid&&queue.join()===L[key].join()){toggle();return}playFrom(L[key],row.dataset.tid,LN[key])}
+});
+function act(a,el){
+ if(a==='back')back();
+ else if(a==='addMenu')addMenu();
+ else if(a==='resume'){const t=byId(recent[0]);if(t)playFrom(sorted(tracks).map(x=>x.id),t.id,'Tüm şarkılar')}
+ else if(a==='shuffleAll')shuffleFrom(tracks.map(t=>t.id),'Tüm şarkılar');
+ else if(a==='playL'){shuffle=false;ls.set('shuffle',false);playFrom(L[el.dataset.l],null,LN[el.dataset.l])}
+ else if(a==='shufL')shuffleFrom(L[el.dataset.l],LN[el.dataset.l]);
+ else if(a==='clearQ'){const c=cur();queue=c?[c.id]:[];qi=c?0:-1;renderPage('none');toast('Sıra temizlendi')}
+ else if(a==='groupMenu')groupMenu(el.dataset.type,el.dataset.k);
+ else if(a==='plMenu')playlistMenu(el.dataset.k);
+ else if(a==='selOn'){selMode=true;sel.clear();renderPage('none')}
+ else if(a==='selOff'){selMode=false;sel.clear();renderPage('none')}
+ else if(a==='selAll'){if(sel.size===tracks.length)sel.clear();else tracks.forEach(t=>sel.add(t.id));renderPage('none')}
+ else if(a==='delSel'){if(sel.size)confirmDel(sel.size+' dosya silinsin mi?','Seçilen şarkılar bu cihazdan ve tüm listelerden kaldırılır.',[...sel],()=>{selMode=false;sel.clear()})}
+ else if(a==='delAll')confirmDel('Tüm müzik silinsin mi?',tracks.length+' şarkı bu cihazdan kaldırılır. Çalma listelerin boş kalır.',tracks.map(t=>t.id));
+ else if(a==='restoreDemos'){hiddenDemos.clear();saveMeta();const ex=new Set(tracks.map(t=>t.id));tracks=demos().filter(d=>!ex.has(d.id)).concat(tracks);renderPage('none');toast('Örnek şarkılar geri geldi')}
+ else if(a==='fxReset'){fx=Object.assign({},FX_DEF,{on:fx.on,eq:FX_DEF.eq.slice()});applyFx();renderPage('none');toast('Efektler sıfırlandı')}
+}
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.id==='sort'){sortBy=t.value;ls.set('sort',sortBy);renderPage('none')}
+ else if(t.id==='fxOn'){fx.on=t.checked;if(fx.on){const ok=engineOn();if(!ok){fx.on=false;toast('Bu tarayıcı ses efektlerini desteklemiyor')}else if(IOS)toast('Kilit ekranında dinlerken ses motorunu kapalı tut',3500)}applyFx();renderPage('none')}
+ else if(t.id==='eqOn'){fx.eqOn=t.checked;applyFx()}
+ else if(t.id==='comp'||t.id==='mono'){fx[t.id]=t.checked;applyFx();renderPage('none')}
+});
+document.addEventListener('input',e=>{const t=e.target;if(t.type==='range')paintRange(t);
+ if(t.id==='q'){searchQ=t.value.trim();renderResults();return}
+ if(/^b\d$/.test(t.id)){const i=+t.id[1];fx.eq[i]=+t.value;$('#'+t.id+'_o').textContent=(fx.eq[i]>0?'+':'')+fx.eq[i];applyFx();drawCurve();return}
+ const map={bass:v=>'+'+v+' dB',crystal:v=>v+'%',pre:v=>(v>0?'+':'')+v+' dB',width:v=>v+'%',surround:v=>v+'%',surSpeed:v=>(+v).toFixed(2)+' Hz',balance:v=>+v===0?'Orta':(v<0?'S ':'Sğ ')+Math.abs(v),reverb:v=>v+'%',echo:v=>v+'%',echoMs:v=>v+' ms',echoFb:v=>v+'%'};
+ if(map[t.id]){fx[t.id]=+t.value;$('#'+t.id+'_o').textContent=map[t.id](+t.value);applyFx()}
+});
+document.addEventListener('submit',e=>{if(e.target.id!=='plForm')return;e.preventDefault();const n=$('#plName').value.trim();if(!n){toast('Listeye bir ad ver');return}const p={id:'p'+Date.now().toString(36),name:n,ids:[]};playlists.push(p);saveMeta();go('playlist',p.id);toast('“'+n+'” oluşturuldu')});
+document.addEventListener('click',e=>{const p=e.target.closest('[data-fxp]');if(p){const pr=FX_PRESETS[p.dataset.fxp];Object.assign(fx,pr);if(p.dataset.fxp!=='Kapalı'&&!fx.on){fx.on=engineOn()}applyFx();renderPage('none');toast(p.dataset.fxp+' uygulandı');return}
+ const q=e.target.closest('[data-eqp]');if(q){fx.eq=EQ_PRESETS[q.dataset.eqp].slice();applyFx();renderPage('none');return}
+ const r=e.target.closest('[data-room]');if(r){fx.room=r.dataset.room;if(!fx.reverb)fx.reverb=25;applyFx();renderPage('none')}});
+
+/* ===== Silme ===== */
+function deleteTracks(ids){const s=new Set(ids),c=cur();
+ if(c&&s.has(c.id)){audio.pause();audio.removeAttribute('src');try{audio.load()}catch(e){}}
+ tracks=tracks.filter(t=>!s.has(t.id));
+ ids.forEach(id=>{if(id.startsWith('demo-'))hiddenDemos.add(id);else idbDel(id);favs.delete(id);delete plays[id]});
+ recent=recent.filter(id=>!s.has(id));playlists.forEach(p=>p.ids=p.ids.filter(x=>!s.has(x)));
+ const keep=c&&!s.has(c.id)?c.id:null;queue=keep?queue.filter(x=>!s.has(x)):[];qi=keep?queue.indexOf(keep):-1;
+ saveMeta();updateNow()}
+function confirmDel(title,body,ids,after,popBack){openSheet(`<div class="grab"></div><h4>${esc(title)}</h4><p class="hint">${esc(body)} Bu işlem geri alınamaz.</p>
+ <button class="opt danger" id="cYes">${I.trash}Sil</button><button class="opt" id="cNo">${I.x}Vazgeç</button>`);
+ $('#cNo').onclick=closeSheet;$('#cYes').onclick=()=>{deleteTracks(ids);if(after)after();closeSheet();if(popBack)back();else renderPage('none');toast(ids.length===1?'Silindi':ids.length+' şarkı silindi')}}
+
+/* ===== Menüler ===== */
+function openSheet(html){$('#sheetCard').innerHTML=html;$('#sheet').hidden=false;const f=$('#sheetCard').querySelector('button,input');if(f&&f.tagName==='INPUT')f.focus()}
+function closeSheet(){$('#sheet').hidden=true}
+$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
+function trackMenu(id,ctxs){const t=byId(id);if(!t)return;const plId=ctxs&&ctxs.startsWith('pl:')?ctxs.slice(3):null;
+ openSheet(`<div class="grab"></div><h4>${esc(t.title)}</h4><p class="hint">${esc(t.artist)} · ${esc(t.album)}</p>
+ <button class="opt" data-a="nextup">${I.nextUp}Sıradaki olarak çal</button>
+ <button class="opt" data-a="enq">${I.queue}Sıranın sonuna ekle</button>
+ <button class="opt" data-a="addpl">${I.listAdd}Çalma listesine ekle</button>
+ <button class="opt" data-a="fav">${favs.has(id)?I.heartF+'Favorilerden çıkar':I.heart+'Favorilere ekle'}</button>
+ <button class="opt" data-a="artist">${I.user}Sanatçıya git</button>
+ <button class="opt" data-a="album">${I.disc}Albüme git</button>
+ ${plId?`<button class="opt" data-a="plrm">${I.x}Bu listeden çıkar</button>`:''}
+ <button class="opt danger" data-a="del">${I.trash}Şarkıyı sil</button>`);
+ $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+  if(a==='nextup'){if(qi<0)playFrom([id],id);else{queue.splice(qi+1,0,id);toast('Sıradaki: '+t.title)}closeSheet()}
+  else if(a==='enq'){if(qi<0)playFrom([id],id);else{queue.push(id);toast('Sıraya eklendi')}closeSheet()}
+  else if(a==='fav'){toggleFav(id);closeSheet();renderPage('none')}
+  else if(a==='artist'||a==='album'){closeSheet();closeNp();go(a,t[a])}
+  else if(a==='plrm'){const p=playlists.find(p=>p.id===plId);if(p){p.ids=p.ids.filter(x=>x!==id);saveMeta()}closeSheet();renderPage('none');toast('Listeden çıkarıldı')}
+  else if(a==='del')confirmDel(`“${t.title}” silinsin mi?`,'Şarkı bu cihazdan ve tüm listelerden kaldırılır.',[id]);
+  else if(a==='addpl')addToPlaylist([id],t.title)}}
+function groupMenu(type,k){const ts=tracks.filter(t=>t[type]===k),ids=ts.map(t=>t.id),label=type==='album'?'albümü':'sanatçıyı';
+ openSheet(`<div class="grab"></div><h4>${esc(k)}</h4><p class="hint">${ts.length} şarkı</p>
+ <button class="opt" data-a="enq">${I.queue}Tümünü sıraya ekle</button>
+ <button class="opt" data-a="addpl">${I.listAdd}Tümünü listeye ekle</button>
+ <button class="opt" data-a="fav">${I.heart}Tümünü favorilere ekle</button>
+ <button class="opt danger" data-a="del">${I.trash}${type==='album'?'Albümü':'Sanatçıyı'} sil</button>`);
+ $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+  if(a==='enq'){if(qi<0)playFrom(ids,null,k);else{queue.push(...ids);toast(ids.length+' şarkı sıraya eklendi')}closeSheet()}
+  else if(a==='fav'){ids.forEach(i=>favs.add(i));saveMeta();closeSheet();toast('Favorilere eklendi')}
+  else if(a==='addpl')addToPlaylist(ids,k);
+  else if(a==='del')confirmDel(`“${k}” ${label} sil?`,`${ts.length} şarkı bu cihazdan ve tüm listelerden kaldırılır.`,ids,null,true)}}
+function playlistMenu(id){const p=playlists.find(x=>x.id===id);if(!p)return;
+ openSheet(`<div class="grab"></div><h4>${esc(p.name)}</h4><p class="hint">${p.ids.filter(byId).length} şarkı</p>
+ <button class="opt" data-a="ren">${I.edit}Yeniden adlandır</button>
+ <button class="opt" data-a="enq">${I.queue}Tümünü sıraya ekle</button>
+ <button class="opt danger" data-a="delpl">${I.trash}Listeyi sil</button>
+ <button class="opt danger" data-a="delsongs">${I.trash}Listedeki şarkıları cihazdan sil</button>`);
+ $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,ids=p.ids.filter(byId);
+  if(a==='ren'){openSheet(`<div class="grab"></div><h4>Listeyi yeniden adlandır</h4><form class="field" id="renF" style="margin:8px 0"><input id="renN" value="${esc(p.name)}" maxlength="60" aria-label="Liste adı"><button class="btn pri" type="submit">Kaydet</button></form>`);
+   $('#renF').onsubmit=ev=>{ev.preventDefault();const n=$('#renN').value.trim();if(!n){toast('Listeye bir ad ver');return}p.name=n;saveMeta();closeSheet();renderPage('none')}}
+  else if(a==='enq'){if(qi<0)playFrom(ids,null,p.name);else{queue.push(...ids);toast('Sıraya eklendi')}closeSheet()}
+  else if(a==='delpl'){openSheet(`<div class="grab"></div><h4>“${esc(p.name)}” silinsin mi?</h4><p class="hint">Sadece liste silinir, şarkılar kütüphanende kalır.</p><button class="opt danger" id="cYes">${I.trash}Listeyi sil</button><button class="opt" id="cNo">${I.x}Vazgeç</button>`);
+   $('#cNo').onclick=closeSheet;$('#cYes').onclick=()=>{playlists=playlists.filter(x=>x!==p);saveMeta();closeSheet();back();toast('Liste silindi')}}
+  else if(a==='delsongs'){if(!ids.length){toast('Listede şarkı yok');return}confirmDel(`${ids.length} şarkı silinsin mi?`,'Bu listedeki şarkılar cihazdan ve tüm listelerden kaldırılır. Liste boş kalır.',ids)}}}
+function addToPlaylist(ids,label){
+ openSheet(`<div class="grab"></div><h4>Listeye ekle</h4><p class="hint">${esc(label)}${ids.length>1?' · '+ids.length+' şarkı':''}</p>
+ <form class="field" id="plQ" style="margin-bottom:6px"><input id="plQN" placeholder="Yeni liste adı" maxlength="60" aria-label="Yeni liste adı"><button class="btn pri" type="submit">Oluştur</button></form>
+ ${playlists.map(p=>`<button class="opt" data-p="${p.id}">${I.lists}${esc(p.name)}<span class="s" style="margin-left:auto">${p.ids.length}</span></button>`).join('')}`);
+ const add=p=>{let n=0;ids.forEach(id=>{if(!p.ids.includes(id)){p.ids.push(id);n++}});saveMeta();closeSheet();toast(n?`“${p.name}” listesine eklendi`:'Zaten listede');if(stack[stack.length-1].p==='lists')renderPage('none')};
+ $('#plQ').onsubmit=e=>{e.preventDefault();const n=$('#plQN').value.trim();if(!n){toast('Listeye bir ad ver');return}const p={id:'p'+Date.now().toString(36),name:n,ids:[]};playlists.push(p);add(p)};
+ $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-p]');if(b)add(playlists.find(p=>p.id===b.dataset.p))}}
+function toggleFav(id){favs.has(id)?favs.delete(id):favs.add(id);saveMeta();updateNow();toast(favs.has(id)?'Favorilere eklendi':'Favorilerden çıkarıldı')}
+
+/* ===== Çalıyor ekranı ===== */
+$('#mNext').innerHTML=I.next;$('#prev').innerHTML=I.prev;$('#next').innerHTML=I.next;$('#npClose').innerHTML=I.down;$('#npMore').innerHTML=I.more;$('#shuf').innerHTML=I.shuf;
+const tool=(id,ic,label)=>$('#'+id).innerHTML=ic+'<span>'+label+'</span>';
+tool('tQueue',I.queue,'Sıra');tool('tFx',I.fx,'Efekt');tool('tSpeed',I.speed,'Hız');tool('tSleep',I.moon,'Uyku');tool('tList',I.listAdd,'Listeye');
+$('#mPlay').onclick=e=>{e.stopPropagation();toggle()};$('#mNext').onclick=e=>{e.stopPropagation();next()};
+$('#prev').onclick=prev;$('#next').onclick=()=>next();$('#play').onclick=toggle;
+$('#mini').onclick=openNp;
+function openNp(){const n=$('#np');n.hidden=false;n.classList.remove('open');void n.offsetWidth;n.classList.add('open');document.body.style.overflow='hidden';sizeViz();drawViz()}
+function closeNp(){$('#np').hidden=true;document.body.style.overflow=''}
+$('#npClose').onclick=closeNp;
+$('#npMore').onclick=()=>{const c=cur();if(c)trackMenu(c.id)};
+$('#npFav').onclick=()=>{const c=cur();if(c)toggleFav(c.id)};
+$('#npS').onclick=()=>{const c=cur();if(c){closeNp();if(tab!=='library'){tab='library';stack=[{p:'library'}]}go('artist',c.artist)}};
+$('#tQueue').onclick=()=>{closeNp();if(stack[stack.length-1].p!=='queue')go('queue')};
+$('#tFx').onclick=()=>{closeNp();setTab('fx')};
+$('#tList').onclick=()=>{const c=cur();if(c)addToPlaylist([c.id],c.title)};
+$('#tSpeed').onclick=speedSheet;$('#tSleep').onclick=sleepSheet;
+$('#shuf').onclick=()=>{shuffle=!shuffle;ls.set('shuffle',shuffle);if(qi>=0&&shuffle){const c=queue[qi],rest=queue.filter((_,i)=>i!==qi);queue=[c,...shuffleArr(rest)];qi=0}updateNow();toast(shuffle?'Karıştırma açık':'Karıştırma kapalı')};
+$('#rep').onclick=()=>{repeat=repeat==='off'?'all':repeat==='all'?'one':'off';ls.set('repeat',repeat);updateNow();toast({off:'Tekrar kapalı',all:'Tümünü tekrarla',one:'Bu şarkıyı tekrarla'}[repeat])};
+let seeking=false;const seek=$('#seek');
+seek.oninput=()=>{seeking=true;paintRange(seek);$('#tCur').textContent=fmt(seek.value/1000*(audio.duration||0))};
+seek.onchange=()=>{if(isFinite(audio.duration))audio.currentTime=seek.value/1000*audio.duration;seeking=false};
+
+const tintCache={};
+function tintFor(t){if(!t.art)return Promise.resolve(`hsl(${hue(t.album)} 70% 50%)`);if(tintCache[t.id])return Promise.resolve(tintCache[t.id]);
+ return new Promise(r=>{const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=12;const x=c.getContext('2d');x.drawImage(im,0,0,12,12);const d=x.getImageData(0,0,12,12).data;let R=0,G=0,B=0,n=0;for(let i=0;i<d.length;i+=4){const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]),w=1+(mx-mn)/40;R+=d[i]*w;G+=d[i+1]*w;B+=d[i+2]*w;n+=w}tintCache[t.id]=`rgb(${R/n|0},${G/n|0},${B/n|0})`;r(tintCache[t.id])}catch(e){r('var(--accent)')}};im.onerror=()=>r('var(--accent)');im.src=t.art})}
+let lastNowId=null;
+function updateNow(){const c=cur();$('#mini').hidden=!c;if(!c){if(!$('#np').hidden)closeNp();return}const p=audio.paused;
+ if(lastNowId!==c.id){lastNowId=c.id;$('#mArt').innerHTML=artOf(c);$('#npArt').innerHTML=artOf(c);tintFor(c).then(v=>{const r=document.documentElement.style;r.setProperty('--tint',v);r.setProperty('--tint2',`color-mix(in srgb,${v} 55%,hsl(${(hue(c.album)+60)%360} 85% 65%))`)});$('#npBg').innerHTML=c.art?`<img src="${c.art}" alt="">`:`<span class="gen" style="--h:${hue(c.album)}"></span>`}
+ $('#mT').textContent=c.title;$('#mS').textContent=c.artist;
+ [$('#mPlay'),$('#play')].forEach(b=>{b.innerHTML=p?I.play:I.pause;b.setAttribute('aria-label',p?'Çal':'Duraklat')});
+ $('#np').classList.toggle('paused',p);
+ $('#npT').textContent=c.title;$('#npS').textContent=c.artist;$('#npFrom').textContent=queueName||c.album;
+ const f=favs.has(c.id);$('#npFav').innerHTML=f?I.heartF:I.heart;$('#npFav').classList.toggle('on',f);$('#npFav').setAttribute('aria-label',f?'Favorilerden çıkar':'Favorilere ekle');
+ $('#shuf').classList.toggle('act',shuffle);$('#rep').classList.toggle('act',repeat!=='off');$('#rep').innerHTML=repeat==='one'?I.rep1:I.rep;
+ $('#tFx').classList.toggle('on',fx.on);$('#tSpeed').classList.toggle('on',speed!==1);$('#tSleep').classList.toggle('on',!!(sleepAt||sleepEnd));
+ if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:c.title,artist:c.artist,album:c.album,artwork:c.art?[{src:c.art,sizes:'360x360',type:'image/jpeg'}]:[]});navigator.mediaSession.playbackState=p?'paused':'playing'}catch(e){}}
+ tick()}
+function tick(){const d=audio.duration,t=audio.currentTime,pct=isFinite(d)&&d>0?t/d:0;$('#mProg').style.width=(pct*100)+'%';
+ if(!seeking){seek.value=Math.round(pct*1000);paintRange(seek);$('#tCur').textContent=fmt(t)}$('#tDur').textContent='-'+fmt(Math.max(0,(d||0)-t));
+ if('mediaSession' in navigator&&isFinite(d)&&navigator.mediaSession.setPositionState){try{navigator.mediaSession.setPositionState({duration:d,position:Math.min(t,d),playbackRate:audio.playbackRate})}catch(e){}}}
+if('mediaSession' in navigator){const h=(a,f)=>{try{navigator.mediaSession.setActionHandler(a,f)}catch(e){}};
+ h('play',()=>toggle());h('pause',()=>audio.pause());h('previoustrack',prev);h('nexttrack',()=>next());h('seekto',d=>{audio.currentTime=d.seekTime})}
+
+const cv=$('#viz'),cx=cv.getContext('2d');let raf=0;
+function sizeViz(){const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;cv.width=Math.max(1,r.width*dpr);cv.height=Math.max(1,r.height*dpr)}
+function drawViz(){cancelAnimationFrame(raf);if($('#np').hidden)return;const cs=getComputedStyle(document.documentElement),col=cs.getPropertyValue('--accent').trim(),ln=cs.getPropertyValue('--line').trim();
+ const W=cv.width,H=cv.height,Nb=48,data=new Uint8Array(analyser?analyser.frequencyBinCount:64);let ph=0;
+ const fr=()=>{const live=analyser&&fx.on;if(live)analyser.getByteFrequencyData(data);cx.clearRect(0,0,W,H);const bw=W/Nb;ph+=.06;
+  for(let i=0;i<Nb;i++){let v;if(live)v=data[Math.floor(i*data.length*.75/Nb)]/255;else v=audio.paused?0:.18+.14*Math.sin(ph+i*.45)*Math.sin(ph*.7+i*.2);
+   const h=Math.max(H*.08,v*H);cx.fillStyle=v>.03?col:ln;cx.globalAlpha=.3+.7*Math.min(1,v*1.4);const x=i*bw+bw*.22,y=(H-h)/2;cx.beginPath();cx.roundRect?cx.roundRect(x,y,bw*.56,h,bw*.28):cx.rect(x,y,bw*.56,h);cx.fill()}
+  cx.globalAlpha=1;if(!audio.paused&&!$('#np').hidden)raf=requestAnimationFrame(fr)};fr()}
+addEventListener('resize',()=>{if(!$('#np').hidden){sizeViz();drawViz()}});
+
+/* Hız */
+function speedSheet(){openSheet(`<div class="grab"></div><h4>Çalma hızı</h4><p class="hint">Perdeyi kapatırsan ses plak gibi incelir ya da kalınlaşır.</p>
+ <div style="display:grid;gap:14px;padding:6px">
+ <div class="fxh"><b style="font-family:var(--mono);font-size:28px" id="spV">${speed.toFixed(2)}×</b><label class="fxh" style="gap:10px;font-weight:600;font-size:14px">Perdeyi koru<span class="sw"><input type="checkbox" id="kp" ${keepPitch?'checked':''} aria-label="Perdeyi koru"><span></span></span></label></div>
+ <input type="range" id="sp" min="0.5" max="2" step="0.05" value="${speed}" aria-label="Çalma hızı">
+ <div class="chips wrap">${[0.5,0.75,1,1.25,1.5,2].map(v=>`<button class="chip" data-sp="${v}" aria-pressed="${Math.abs(v-speed)<.001}">${v}×</button>`).join('')}</div></div>`);
+ const upd=v=>{speed=+(+v).toFixed(2);ls.set('speed',speed);applySpeed();$('#spV').textContent=speed.toFixed(2)+'×';$('#sp').value=speed;paintRange($('#sp'));document.querySelectorAll('[data-sp]').forEach(b=>b.setAttribute('aria-pressed',Math.abs(+b.dataset.sp-speed)<.001));updateNow()};
+ paintRanges($('#sheetCard'));$('#sp').oninput=e=>upd(e.target.value);$('#kp').onchange=e=>{keepPitch=e.target.checked;ls.set('keepPitch',keepPitch);applySpeed()};
+ $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-sp]');if(b)upd(b.dataset.sp)}}
+
+/* Uyku */
+let sleepT=0,sleepAt=0,sleepEnd=false;
+function clearSleep(){clearTimeout(sleepT);sleepT=0;sleepAt=0;sleepEnd=false;updateNow()}
+function setSleep(k){clearTimeout(sleepT);sleepT=0;sleepAt=0;sleepEnd=false;
+ if(k==='end')sleepEnd=true;else if(k!=='off'){sleepAt=Date.now()+(+k)*60000;sleepT=setTimeout(()=>{audio.pause();clearSleep();toast('Uyku zamanlayıcı çalmayı durdurdu')},(+k)*60000)}
+ updateNow();if(k!=='off')toast(k==='end'?'Bu şarkı bitince duracak':k+' dakika sonra duracak');else toast('Uyku zamanlayıcı kapalı')}
+function sleepSheet(){const sel=sleepEnd?'end':sleepAt?'on':'off';
+ openSheet(`<div class="grab"></div><h4>Uyku zamanlayıcı</h4><p class="hint" id="slInfo">${sleepEnd?'Bu şarkı bitince duracak':sleepAt?fmt((sleepAt-Date.now())/1000)+' sonra duracak':'Kapalı'}</p>
+ ${[['off','Kapalı'],['10','10 dakika'],['20','20 dakika'],['30','30 dakika'],['45','45 dakika'],['60','1 saat'],['90','1,5 saat'],['end','Şarkı bitince']].map(([k,n])=>`<button class="opt" data-sl="${k}">${k==='off'?I.x:k==='end'?I.note:I.moon}${n}${(k==='off'&&sel==='off')||(k==='end'&&sel==='end')?`<span style="margin-left:auto;color:var(--accent-ink)">${I.check}</span>`:''}</button>`).join('')}`);
+ $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-sl]');if(b){setSleep(b.dataset.sl);closeSheet()}}}
+setInterval(()=>{const i=$('#slInfo');if(i&&sleepAt&&!$('#sheet').hidden)i.textContent=fmt((sleepAt-Date.now())/1000)+' sonra duracak'},1000);
+
+/* Klavye */
+addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea'))return;
+ if(e.code==='Space'){e.preventDefault();toggle()}else if(e.key==='Escape'){if(!$('#sheet').hidden)closeSheet();else if(!$('#np').hidden)closeNp();else back()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.state!=='running'&&!audio.paused)ctx.resume()});
+
+/* Bildirim */
+let toastT=0;function toast(m,ms=2400){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);if(ms)toastT=setTimeout(()=>t.hidden=true,ms)}
+
+/* Başlat */
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+(async()=>{tracks=demos();renderPage('none');await idbOpen();const saved=await idbAll();if(saved.length){tracks=tracks.concat(saved.filter(s=>s.blob));renderPage('none')}
+ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}})();
+})();
+</script>
+</body>
+</html>
