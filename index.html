@@ -16,12 +16,12 @@
 <style>
 /* Layout: Liquid Glass. Kapak renginden beslenen ortam katmanı üzerinde yüzen cam yüzeyler; sayfa yığını, yüzen kapsül sekme çubuğu + ayrı arama düğmesi, üstünde cam mini çalar. */
 :root{
-  --bg:#ECEEF5;--fg:#0B0C10;--muted:rgba(22,24,34,.58);--line:rgba(22,24,34,.09);
+  --bg:#ECEEF5;--fg:#0B0C10;--muted:rgba(22,24,34,.68);--line:rgba(22,24,34,.09);
   --accent:#FF2D55;--accent-ink:#E01E48;--accent-soft:rgba(255,45,85,.14);--on-accent:#FFFFFF;--danger:#FF3B30;
-  --glass:rgba(255,255,255,.5);--glass-strong:rgba(255,255,255,.76);--glass-hi:rgba(255,255,255,.9);
-  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 .5px rgba(255,255,255,.7),inset 0 -1px 2px rgba(255,255,255,.3),0 10px 30px rgba(30,36,70,.12),0 1px 2px rgba(30,36,70,.06);
-  --solid:#F6F7FB;--track:rgba(22,24,34,.12);--knob:#FFFFFF;--scrim:rgba(245,246,250,.38);
-  --tint:#7C8CFF;--tint2:#FF8FB1;--amb:.62;--blur:24px;
+  --glass:rgba(255,255,255,.17);--glass-strong:rgba(255,255,255,.3);--glass-hi:rgba(255,255,255,.5);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 .5px rgba(255,255,255,.55),inset 0 -1px 1px rgba(255,255,255,.18),0 8px 24px rgba(30,36,70,.08);
+  --solid:#F6F7FB;--track:rgba(22,24,34,.14);--knob:#FFFFFF;--scrim:rgba(245,246,250,.22);
+  --tint:#7C8CFF;--tint2:#FF8FB1;--tint3:#5AC8FA;--amb:.9;--blur:26px;
   --sw-blue:#0A84FF;--sw-violet:#8E5CF7;
   --body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
   --display:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,system-ui,sans-serif;
@@ -29,17 +29,17 @@
   --tabh:62px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#06070B;--fg:#F5F6FA;--muted:rgba(235,237,247,.6);--line:rgba(255,255,255,.09);
+  --bg:#06070B;--fg:#F5F6FA;--muted:rgba(235,237,247,.68);--line:rgba(255,255,255,.09);
   --accent:#FF375F;--accent-ink:#FF6A88;--accent-soft:rgba(255,55,95,.22);--on-accent:#FFFFFF;--danger:#FF453A;
-  --glass:rgba(40,42,54,.42);--glass-strong:rgba(30,32,40,.78);--glass-hi:rgba(255,255,255,.16);
-  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 -1px 2px rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.45);
-  --solid:#15161C;--track:rgba(255,255,255,.16);--knob:#F2F3F7;--scrim:rgba(6,7,11,.5);--amb:.45;color-scheme:dark}}
+  --glass:rgba(255,255,255,.075);--glass-strong:rgba(255,255,255,.12);--glass-hi:rgba(255,255,255,.2);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 .5px rgba(255,255,255,.12),inset 0 -1px 1px rgba(255,255,255,.05),0 10px 28px rgba(0,0,0,.3);
+  --solid:#15161C;--track:rgba(255,255,255,.18);--knob:#F2F3F7;--scrim:rgba(6,7,11,.3);--amb:.72;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#06070B;--fg:#F5F6FA;--muted:rgba(235,237,247,.6);--line:rgba(255,255,255,.09);
+  --bg:#06070B;--fg:#F5F6FA;--muted:rgba(235,237,247,.68);--line:rgba(255,255,255,.09);
   --accent:#FF375F;--accent-ink:#FF6A88;--accent-soft:rgba(255,55,95,.22);--on-accent:#FFFFFF;--danger:#FF453A;
-  --glass:rgba(40,42,54,.42);--glass-strong:rgba(30,32,40,.78);--glass-hi:rgba(255,255,255,.16);
-  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 -1px 2px rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.45);
-  --solid:#15161C;--track:rgba(255,255,255,.16);--knob:#F2F3F7;--scrim:rgba(6,7,11,.5);--amb:.45;color-scheme:dark}
+  --glass:rgba(255,255,255,.075);--glass-strong:rgba(255,255,255,.12);--glass-hi:rgba(255,255,255,.2);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 .5px rgba(255,255,255,.12),inset 0 -1px 1px rgba(255,255,255,.05),0 10px 28px rgba(0,0,0,.3);
+  --solid:#15161C;--track:rgba(255,255,255,.18);--knob:#F2F3F7;--scrim:rgba(6,7,11,.3);--amb:.72;color-scheme:dark}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -55,12 +55,16 @@ svg{flex:none}
 
 /* Cam malzeme */
 .install,.glass,.hero,.stat,.tile,.fxcard,.list,.group,.mini,.tabcap,.tabsearch,.btn,.chip,.hdr .ib,select,.field input,.searchbox input,.np-tools,.empty,.toast,.sheet-card{
-  background:var(--glass);-webkit-backdrop-filter:blur(var(--blur)) saturate(190%);backdrop-filter:blur(var(--blur)) saturate(190%);box-shadow:var(--glass-shadow);border:0}
+  background:var(--glass);-webkit-backdrop-filter:blur(var(--blur)) saturate(170%) brightness(1.04);backdrop-filter:blur(var(--blur)) saturate(170%) brightness(1.04);box-shadow:var(--glass-shadow);border:0}
 
 /* Ortam katmanı */
-.ambient{position:fixed;inset:-10%;z-index:-1;pointer-events:none;opacity:var(--amb);
-  background:radial-gradient(40% 32% at 18% 12%,var(--tint),transparent 70%),radial-gradient(38% 30% at 88% 28%,var(--tint2),transparent 72%),radial-gradient(46% 36% at 30% 92%,var(--accent),transparent 72%),radial-gradient(40% 30% at 85% 85%,var(--tint),transparent 70%);
-  filter:saturate(1.2);animation:drift 26s ease-in-out infinite alternate;transition:background 1s}
+.ambient{position:fixed;inset:-15%;z-index:-1;pointer-events:none;opacity:var(--amb);
+  background:radial-gradient(46% 36% at 14% 10%,var(--tint),transparent 72%),radial-gradient(42% 34% at 90% 26%,var(--tint2),transparent 72%),radial-gradient(52% 40% at 24% 86%,var(--tint3),transparent 72%),radial-gradient(44% 34% at 86% 82%,var(--tint),transparent 72%),linear-gradient(165deg,color-mix(in srgb,var(--tint) 38%,var(--bg)),color-mix(in srgb,var(--tint3) 34%,var(--bg)));
+  filter:saturate(1.25);animation:drift 26s ease-in-out infinite alternate}
+@property --tint{syntax:'<color>';inherits:true;initial-value:#7C8CFF}
+@property --tint2{syntax:'<color>';inherits:true;initial-value:#FF8FB1}
+@property --tint3{syntax:'<color>';inherits:true;initial-value:#5AC8FA}
+:root{transition:--tint 1.4s ease,--tint2 1.4s ease,--tint3 1.4s ease}
 @keyframes drift{to{transform:translate3d(-3%,2%,0) scale(1.06)}}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:15;background:var(--scrim);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
 
@@ -74,8 +78,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .hdr.root .ttl{opacity:0}
 .hdr .ib{width:44px;height:44px}
 .hdr-acts{display:flex;gap:8px;justify-content:flex-end;min-width:44px}
-.brandmark{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin:2px 0 6px}
-.brandmark img{width:34px;height:34px;border-radius:9px;box-shadow:0 4px 12px rgba(80,40,160,.32)}
+.brandmark{display:flex;flex-direction:column;align-items:center;gap:10px;font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);margin:4px 0 22px;text-align:center}
+.brandmark img{width:88px;height:88px;border-radius:21px;box-shadow:0 0 0 .5px rgba(255,255,255,.5),0 14px 36px color-mix(in srgb,var(--tint) 45%,transparent),0 4px 12px rgba(0,0,0,.15)}
 .logo-big{width:96px;height:96px;border-radius:22px;box-shadow:0 14px 34px rgba(80,40,160,.32)}
 .big-ttl{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.03em;margin:0 0 16px;text-wrap:balance;line-height:1.08}
 .sub-ttl{color:var(--muted);margin:-10px 0 16px;font-size:14.5px}
@@ -251,10 +255,11 @@ input[type=range]:disabled{opacity:.5}
 .tabcap{flex:1;border-radius:999px;display:grid;grid-template-columns:repeat(4,1fr);padding:4px;background:var(--glass-strong)}
 .tabsearch{width:var(--tabh);flex:none;border-radius:50%;display:grid;place-items:center;color:var(--fg);background:var(--glass-strong)}
 .tabsearch svg{width:24px;height:24px}
-.tabsearch[aria-current="page"]{color:var(--accent-ink)}
+.tabsearch[aria-current="page"]{color:var(--fg);background:color-mix(in srgb,var(--accent) 26%,var(--glass-strong))}
 .tab{border:0;background:none;display:grid;justify-items:center;align-content:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--fg);border-radius:999px;transition:background .25s,color .25s}
 .tab svg{width:24px;height:24px}
-.tab[aria-current="page"]{color:var(--accent-ink);background:var(--glass-hi);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 8px rgba(0,0,0,.06)}
+.tab[aria-current="page"]{color:var(--fg);background:color-mix(in srgb,var(--accent) 26%,var(--glass-hi));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 8px rgba(0,0,0,.08)}
+.tab[aria-current="page"] svg{color:var(--accent-ink);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--accent) 40%,transparent))}
 
 /* Çalıyor ekranı */
 .np{position:fixed;inset:0;z-index:30;overflow-y:auto;background:var(--bg);padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
@@ -301,7 +306,7 @@ input[type=range]:disabled{opacity:.5}
 
 /* Sayfa altı paneller ve bildirim */
 .sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.28);display:flex;align-items:flex-end;justify-content:center;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
-.sheet-card{width:100%;max-width:520px;border-radius:36px;padding:10px 14px 16px;display:grid;gap:2px;max-height:82vh;overflow:auto;animation:up .3s cubic-bezier(.2,.9,.25,1);background:var(--glass-strong)}
+.sheet-card{width:100%;max-width:520px;border-radius:36px;padding:10px 14px 16px;display:grid;gap:2px;max-height:82vh;overflow:auto;animation:up .3s cubic-bezier(.2,.9,.25,1);background:var(--glass-strong);-webkit-backdrop-filter:blur(40px) saturate(180%)!important;backdrop-filter:blur(40px) saturate(180%)!important}
 .grab{width:38px;height:5px;border-radius:3px;background:var(--track);margin:0 auto 10px}
 .sheet-card h4{margin:0 8px 2px;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.02em}
 .sheet-card .hint{margin:0 8px 10px;color:var(--muted);font-size:14px}
@@ -851,7 +856,7 @@ function renderPage(dir){const top=stack[stack.length-1];L={};LN={};const r=(PAG
  $('#hdrL').innerHTML=root?'':`<button class="ib" data-act="back" aria-label="Geri">${I.back}</button>`;
  $('#hdrT').textContent=r.title||'';$('#hdrR').innerHTML=r.acts||'';
  const pg=$('#page');pg.className='page';pg.innerHTML=r.html;if(dir==='fwd'||dir==='back'){void pg.offsetWidth;pg.classList.add(dir)}
- openRow=null;if(r.after)r.after();renderTabs();onScroll();paintRanges(pg);
+ openRow=null;if(r.after)r.after();applyPalette(pageCover());renderTabs();onScroll();paintRanges(pg);
  if(document.querySelector('.swipe')&&!ls.get('swHint',false)){ls.set('swHint',true);setTimeout(()=>toast('İpucu: Şarkıları sağa veya sola kaydır',4200),700)}}
 function go(p,k){stack[stack.length-1].y=scrollY;if(p!=='files'){selMode=false;sel.clear()}stack.push({p,k});renderPage('fwd');scrollTo(0,0)}
 function back(){if(stack.length<2)return;stack.pop();selMode=false;sel.clear();renderPage('back');const y=stack[stack.length-1].y||0;requestAnimationFrame(()=>scrollTo(0,y))}
@@ -986,8 +991,8 @@ tool('tQueue',I.queue,'Sıra');tool('tFx',I.fx,'Efekt');tool('tSpeed',I.speed,'H
 $('#mPlay').onclick=e=>{e.stopPropagation();toggle()};$('#mNext').onclick=e=>{e.stopPropagation();next()};
 $('#prev').onclick=prev;$('#next').onclick=()=>next();$('#play').onclick=toggle;
 $('#mini').onclick=openNp;
-function openNp(){const n=$('#np');n.hidden=false;n.classList.remove('open');void n.offsetWidth;n.classList.add('open');document.body.style.overflow='hidden';sizeViz();drawViz();sizeWave();const c=cur();if(c&&wavePkId!==c.id)loadWave(c);else drawWave();waveLoop()}
-function closeNp(){$('#np').hidden=true;document.body.style.overflow=''}
+function openNp(){const n=$('#np');n.hidden=false;n.classList.remove('open');void n.offsetWidth;n.classList.add('open');document.body.style.overflow='hidden';sizeViz();drawViz();sizeWave();const c=cur();applyPalette(c);if(c&&wavePkId!==c.id)loadWave(c);else drawWave();waveLoop()}
+function closeNp(){$('#np').hidden=true;document.body.style.overflow='';applyPalette(pageCover())}
 $('#npClose').onclick=closeNp;
 $('#npMore').onclick=()=>{const c=cur();if(c)trackMenu(c.id)};
 $('#npFav').onclick=()=>{const c=cur();if(c)toggleFav(c.id)};
@@ -1032,12 +1037,21 @@ wv.addEventListener('pointerup',endSeek);wv.addEventListener('pointercancel',end
 wv.addEventListener('keydown',e=>{if(!isFinite(audio.duration))return;const st={ArrowRight:5,ArrowLeft:-5,ArrowUp:10,ArrowDown:-10}[e.key];if(st){e.preventDefault();audio.currentTime=Math.min(audio.duration,Math.max(0,audio.currentTime+st));drawWave()}});
 addEventListener('resize',()=>{if(!$('#np').hidden){sizeWave();drawWave()}});
 
-const tintCache={};
+const tintCache={},palCache={};
+const hsl=(r,g,b)=>{r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return [h,s,l]};
+const vivid=([h,s,l])=>`hsl(${Math.round(h)} ${Math.round(Math.max(s,.5)*100)}% ${Math.round(Math.min(.64,Math.max(.44,l))*100)}%)`;
+function paletteFor(t){if(!t)return Promise.resolve(null);const key=t.art?t.id:'h'+t.album;if(palCache[key])return Promise.resolve(palCache[key]);
+ if(!t.art){const h=hue(t.album);return Promise.resolve(palCache[key]=[`hsl(${h} 80% 60%)`,`hsl(${(h+55)%360} 78% 56%)`,`hsl(${(h+320)%360} 80% 58%)`])}
+ return new Promise(r=>{const im=new Image();im.onload=()=>{try{const N=24,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(im,0,0,N,N);const d=x.getImageData(0,0,N,N).data;
+  const reg=(x0,y0,x1,y1)=>{let R=0,G=0,B=0,n=0;for(let y=y0;y<y1;y++)for(let q=x0;q<x1;q++){const i=(y*N+q)*4,mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]),w=1+(mx-mn)/24;R+=d[i]*w;G+=d[i+1]*w;B+=d[i+2]*w;n+=w}return vivid(hsl(R/n,G/n,B/n))};
+  r(palCache[key]=[reg(0,0,12,12),reg(12,0,24,12),reg(4,12,24,24)])}catch(e){r(null)}};im.onerror=()=>r(null);im.src=t.art})}
+let palToken=0;function applyPalette(t){const tok=++palToken;paletteFor(t).then(p=>{if(tok!==palToken)return;const r=document.documentElement.style;if(!p){['--tint','--tint2','--tint3'].forEach(k=>r.removeProperty(k));return}r.setProperty('--tint',p[0]);r.setProperty('--tint2',p[1]);r.setProperty('--tint3',p[2])})}
+function pageCover(){const top=stack[stack.length-1];if(top.p==='album'){const ts=tracks.filter(t=>t.album===top.k);if(ts.length)return coverFor(ts)}if(top.p==='artist'){const ts=tracks.filter(t=>t.artist===top.k);if(ts.length)return coverFor(ts)}if(top.p==='playlist'){const pl=playlists.find(x=>x.id===top.k);const ts=pl?pl.ids.map(byId).filter(Boolean):[];if(ts.length)return ts.find(t=>t.art)||ts[0]}return cur()}
 function tintFor(t){if(!t.art)return Promise.resolve(`hsl(${hue(t.album)} 70% 50%)`);if(tintCache[t.id])return Promise.resolve(tintCache[t.id]);
  return new Promise(r=>{const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=12;const x=c.getContext('2d');x.drawImage(im,0,0,12,12);const d=x.getImageData(0,0,12,12).data;let R=0,G=0,B=0,n=0;for(let i=0;i<d.length;i+=4){const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]),w=1+(mx-mn)/40;R+=d[i]*w;G+=d[i+1]*w;B+=d[i+2]*w;n+=w}tintCache[t.id]=`rgb(${R/n|0},${G/n|0},${B/n|0})`;r(tintCache[t.id])}catch(e){r('var(--accent)')}};im.onerror=()=>r('var(--accent)');im.src=t.art})}
 let lastNowId=null;
 function updateNow(){const c=cur();$('#mini').hidden=!c;if(!c){if(!$('#np').hidden)closeNp();return}const p=audio.paused;
- if(lastNowId!==c.id){lastNowId=c.id;if(!$('#np').hidden)loadWave(c);$('#mArt').innerHTML=artOf(c);$('#npArt').innerHTML=artOf(c);tintFor(c).then(v=>{const r=document.documentElement.style;r.setProperty('--tint',v);r.setProperty('--tint2',`color-mix(in srgb,${v} 55%,hsl(${(hue(c.album)+60)%360} 85% 65%))`)});$('#npBg').innerHTML=c.art?`<img src="${c.art}" alt="">`:`<span class="gen" style="--h:${hue(c.album)}"></span>`}
+ if(lastNowId!==c.id){lastNowId=c.id;if(!$('#np').hidden)loadWave(c);$('#mArt').innerHTML=artOf(c);$('#npArt').innerHTML=artOf(c);if($('#np').hidden)applyPalette(pageCover());else applyPalette(c);$('#npBg').innerHTML=c.art?`<img src="${c.art}" alt="">`:`<span class="gen" style="--h:${hue(c.album)}"></span>`}
  $('#mT').textContent=c.title;$('#mS').textContent=c.artist;
  [$('#mPlay'),$('#play')].forEach(b=>{b.innerHTML=p?I.play:I.pause;b.setAttribute('aria-label',p?'Çal':'Duraklat')});
  $('#np').classList.toggle('paused',p);
