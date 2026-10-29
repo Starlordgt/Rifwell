@@ -74,7 +74,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .hdr.root .ttl{opacity:0}
 .hdr .ib{width:44px;height:44px}
 .hdr-acts{display:flex;gap:8px;justify-content:flex-end;min-width:44px}
-.brandmark{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin:2px 0 4px}
+.brandmark{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin:2px 0 6px}
+.brandmark img{width:34px;height:34px;border-radius:9px;box-shadow:0 4px 12px rgba(80,40,160,.32)}
+.logo-big{width:96px;height:96px;border-radius:22px;box-shadow:0 14px 34px rgba(80,40,160,.32)}
 .big-ttl{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.03em;margin:0 0 16px;text-wrap:balance;line-height:1.08}
 .sub-ttl{color:var(--muted);margin:-10px 0 16px;font-size:14.5px}
 
@@ -476,19 +478,40 @@ function getDur(f){return new Promise(r=>{const a=new Audio(),u=URL.createObject
 /* ===== İçe aktarma ===== */
 const AUDIO_RE=/\.(mp3|m4a|aac|flac|wav|ogg|oga|opus|aif|aiff|alac|caf)$/i;
 const MIME={mp3:'audio/mpeg',m4a:'audio/mp4',aac:'audio/aac',flac:'audio/flac',wav:'audio/wav',ogg:'audio/ogg',oga:'audio/ogg',opus:'audio/ogg',aif:'audio/aiff',aiff:'audio/aiff',alac:'audio/mp4',caf:'audio/x-caf'};
-async function unzip(f){try{toast('ZIP açılıyor: '+f.name,0);const n=f.size,tail=await rd(f,Math.max(0,n-65558),Math.min(n,65558)),tv=new DataView(tail.buffer);let e=-1;
- for(let i=tail.length-22;i>=0;i--){if(tv.getUint32(i,true)===0x06054b50){e=i;break}}if(e<0)throw new Error('zip');
- const cnt=tv.getUint16(e+10,true),cdSize=tv.getUint32(e+12,true),cdOff=tv.getUint32(e+16,true);if(cdOff===0xFFFFFFFF)throw new Error('zip64');
- const cd=await rd(f,cdOff,cdSize),dv=new DataView(cd.buffer),out=[];let p=0,skipped=0;
- for(let k=0;k<cnt&&p+46<=cd.length;k++){if(dv.getUint32(p,true)!==0x02014b50)break;
-  const method=dv.getUint16(p+10,true),csize=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lho=dv.getUint32(p+42,true);
-  const name=new TextDecoder('utf-8').decode(cd.subarray(p+46,p+46+nl));p+=46+nl+el+cl;
-  if(name.endsWith('/')||!AUDIO_RE.test(name)||/(^|\/)(__MACOSX|\.)/.test(name))continue;
-  const lh=await rd(f,lho,30),lv=new DataView(lh.buffer),start=lho+30+lv.getUint16(26,true)+lv.getUint16(28,true),data=f.slice(start,start+csize);
-  let blob;if(method===0)blob=data;else if(method===8&&'DecompressionStream' in window){try{blob=await new Response(data.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob()}catch(_){skipped++;continue}}else{skipped++;continue}
-  const nm=name.split('/').pop(),ext=nm.split('.').pop().toLowerCase();out.push(new File([blob],nm,{type:MIME[ext]||'audio/mpeg',lastModified:Date.now()}));toast(`ZIP açılıyor: ${out.length} şarkı bulundu`,0)}
- if(!out.length)toast(skipped?'Bu ZIP bu cihazda açılamadı. iOS 16.4 veya üstü gerekir.':'Bu ZIP içinde ses dosyası yok',4000);return out}
- catch(e){toast('ZIP açılamadı: '+f.name,3500);return []}}
+async function unzip(f){const n=f.size;let why='';
+ try{toast('ZIP açılıyor: '+f.name,0);
+  const tlen=Math.min(n,65558+20),toff=n-tlen,tail=await rd(f,toff,tlen),tv=new DataView(tail.buffer);let e=-1;
+  for(let i=tail.length-22;i>=0;i--){if(tv.getUint32(i,true)===0x06054b50){e=i;break}}
+  if(e<0){why='ZIP dosyası tanınmadı';throw 0}
+  let cnt=tv.getUint16(e+10,true),cdSize=tv.getUint32(e+12,true),cdOff=tv.getUint32(e+16,true);
+  if(cdOff===0xFFFFFFFF||cnt===0xFFFF||cdSize===0xFFFFFFFF){/* ZIP64 */
+   if(e<20||tv.getUint32(e-20,true)!==0x07064b50){why='ZIP64 bilgisi bulunamadı';throw 0}
+   const z64=Number(tv.getBigUint64(e-20+8,true)),zh=await rd(f,z64,56),zv=new DataView(zh.buffer);
+   if(zv.getUint32(0,true)!==0x06064b50){why='ZIP64 kaydı bozuk';throw 0}
+   cnt=Number(zv.getBigUint64(32,true));cdSize=Number(zv.getBigUint64(40,true));cdOff=Number(zv.getBigUint64(48,true))}
+  const cd=await rd(f,cdOff,cdSize),dv=new DataView(cd.buffer),out=[];let p=0,skipped=0,bad=0;
+  for(let k=0;k<cnt&&p+46<=cd.length;k++){if(dv.getUint32(p,true)!==0x02014b50)break;
+   const method=dv.getUint16(p+10,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true);
+   let csize=dv.getUint32(p+20,true),usize=dv.getUint32(p+24,true),lho=dv.getUint32(p+42,true);
+   const name=new TextDecoder('utf-8').decode(cd.subarray(p+46,p+46+nl));
+   let x=p+46+nl;const xe=x+el;
+   while(x+4<=xe){const id=dv.getUint16(x,true),sz=dv.getUint16(x+2,true);if(id===0x0001){let q=x+4;
+     if(usize===0xFFFFFFFF){usize=Number(dv.getBigUint64(q,true));q+=8}
+     if(csize===0xFFFFFFFF){csize=Number(dv.getBigUint64(q,true));q+=8}
+     if(lho===0xFFFFFFFF){lho=Number(dv.getBigUint64(q,true));q+=8}}x+=4+sz}
+   p=xe+cl;
+   if(name.endsWith('/')||!AUDIO_RE.test(name)||/(^|\/)(__MACOSX|\.)/.test(name))continue;
+   try{const lh=await rd(f,lho,30),lv=new DataView(lh.buffer);if(lv.getUint32(0,true)!==0x04034b50){bad++;continue}
+    const start=lho+30+lv.getUint16(26,true)+lv.getUint16(28,true),data=f.slice(start,start+csize);let blob;
+    if(method===0)blob=data;
+    else if(method===8){if(!('DecompressionStream' in window)){skipped++;continue}blob=await new Response(data.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob()}
+    else{skipped++;continue}
+    const nm=name.split('/').pop(),ext=nm.split('.').pop().toLowerCase();
+    out.push(new File([blob],nm,{type:MIME[ext]||'audio/mpeg',lastModified:Date.now()}));toast(`ZIP açılıyor: ${out.length} şarkı bulundu`,0)}catch(_){bad++}}
+  if(!out.length){toast(skipped?'Bu ZIP\'in sıkıştırma türü bu cihazda açılamıyor. “Dosya seç” ile toplu seçmeyi dene.':bad?'ZIP içindeki dosyalar okunamadı. “Dosya seç” ile toplu seçmeyi dene.':'Bu ZIP içinde ses dosyası yok (MP3, M4A, FLAC, WAV…)',5000);return []}
+  if(bad||skipped)toast(`${out.length} şarkı açıldı, ${bad+skipped} dosya atlandı`,3500);
+  return out}
+ catch(err){toast('ZIP açılamadı'+(why?': '+why:'')+'. “Dosya seç” ile toplu seçmeyi dene.',5000);return []}}
 async function importFiles(list){
  const raw=[...list];let files=[];
  for(const f of raw){if(/\.zip$/i.test(f.name)||/zip/.test(f.type))files.push(...await unzip(f));else if(/^audio\//.test(f.type)||AUDIO_RE.test(f.name))files.push(f)}
@@ -635,7 +658,8 @@ function markRows(){const c=cur();document.querySelectorAll('.row[data-tid]').fo
  const a=r.querySelector('.art');if(!a)return;const vu=a.querySelector('.vu');if(on&&!vu){const num=a.querySelector('.num');a.insertAdjacentHTML('beforeend',num?'<span class="vu" style="background:none"><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i></span>':'<span class="vu"><i></i><i></i><i></i></span>')}if(!on&&vu)vu.remove()})}
 const card=(go,k,ts,title,sub,round)=>`<button class="card" data-go="${go}" data-k="${esc(k)}"><div class="art${round?' round':''}">${coverFor(ts).art?`<img src="${coverFor(ts).art}" alt="">`:`<span class="gen" style="--h:${hue(k)}">${esc(initials(k))}</span>`}</div><div><b>${esc(title)}</b><span>${esc(sub)}</span></div></button>`;
 const navRow=(go,k,artHtml,title,sub,round)=>`<button class="navrow" data-go="${go}" data-k="${esc(k)}"><div class="art${round?' round':''}">${artHtml}</div><div class="meta"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><span class="chev">${I.chev}</span></button>`;
-const emptyBox=(h,p,btn)=>`<div class="empty"><h3>${h}</h3><p>${p}</p>${btn?`<button class="btn pri" data-act="addMenu">${I.plus}Şarkı ekle</button>`:''}</div>`;
+const LOGO='apple-touch-icon.png';
+const emptyBox=(h,p,btn,logo)=>`<div class="empty">${logo?`<img class="logo-big" src="${LOGO}" alt="Riffwell">`:''}<h3>${h}</h3><p>${p}</p>${btn?`<button class="btn pri" data-act="addMenu">${I.plus}Şarkı ekle</button>`:''}</div>`;
 const addBtn=`<button class="ib" data-act="addMenu" aria-label="Şarkı ekle" title="Şarkı ekle">${I.plus}</button>`;
 
 /* ===== Sayfalar ===== */
@@ -644,8 +668,8 @@ let tab='home',stack=[{p:'home'}],selMode=false,sel=new Set(),searchQ='';
 const PAGES={};
 
 PAGES.home=()=>{const h=new Date().getHours(),gr=h<5?'İyi geceler':h<12?'Günaydın':h<18?'İyi günler':h<23?'İyi akşamlar':'İyi geceler';
- const al=group('album'),ar=group('artist');let x=`<div class="brandmark">Riffwell</div><h1 class="big-ttl">${gr}</h1>${IOS&&!navigator.standalone&&!matchMedia('(display-mode: standalone)').matches?'<p class="install">Tam ekran uygulama için alttaki Paylaş düğmesine, sonra “Ana Ekrana Ekle”ye dokun.</p>':''}`;
- if(!tracks.length)return {title:'Ana Sayfa',acts:addBtn,html:x+emptyBox('Müziğini ekle','MP3, M4A, FLAC veya WAV dosyalarını Dosyalar uygulamasından ya da iCloud Drive\'dan seç.',true)};
+ const al=group('album'),ar=group('artist');let x=`<div class="brandmark"><img src="${LOGO}" alt=""><span lang="en">Riffwell</span></div><h1 class="big-ttl">${gr}</h1>${IOS&&!navigator.standalone&&!matchMedia('(display-mode: standalone)').matches?'<p class="install">Tam ekran uygulama için alttaki Paylaş düğmesine, sonra “Ana Ekrana Ekle”ye dokun.</p>':''}`;
+ if(!tracks.length)return {title:'Ana Sayfa',acts:addBtn,html:x+emptyBox('Müziğini ekle','MP3, M4A, FLAC veya WAV dosyalarını Dosyalar uygulamasından ya da iCloud Drive\'dan seç.',true,true)};
  x+=`<div class="stats"><div class="stat"><b>${tracks.length}</b><span>şarkı</span></div><div class="stat"><b>${al.size}</b><span>albüm</span></div><div class="stat"><b>${ar.size}</b><span>sanatçı</span></div><div class="stat"><b>${fmtLong(durOf(tracks.map(t=>t.id)))}</b><span>toplam</span></div></div>`;
  const c=cur(),last=c||byId(recent[0]);
  x+=`<div class="hero"><div><h3>${last?'Kaldığın yerden':'Karışık dinle'}</h3><p>${last?esc(last.title)+' · '+esc(last.artist):'Tüm kütüphaneden rastgele bir sıra'}</p></div><div class="btn-row">${last&&!c?`<button class="btn pri" data-act="resume">${I.play}Devam</button>`:''}<button class="btn ${last&&!c?'':'pri'}" data-act="shuffleAll">${I.shuf}Karıştır</button></div></div>`;
