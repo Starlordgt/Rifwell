@@ -478,6 +478,28 @@ function getDur(f){return new Promise(r=>{const a=new Audio(),u=URL.createObject
 /* ===== İçe aktarma ===== */
 const AUDIO_RE=/\.(mp3|m4a|aac|flac|wav|ogg|oga|opus|aif|aiff|alac|caf)$/i;
 const MIME={mp3:'audio/mpeg',m4a:'audio/mp4',aac:'audio/aac',flac:'audio/flac',wav:'audio/wav',ogg:'audio/ogg',oga:'audio/ogg',opus:'audio/ogg',aif:'audio/aiff',aiff:'audio/aiff',alac:'audio/mp4',caf:'audio/x-caf'};
+/* Yedek DEFLATE açıcı (tarayıcı desteği olmadığında veya hatalı sonuç verdiğinde) */
+function inflateRaw(inp,sizeHint){let out=new Uint8Array(sizeHint>0?sizeHint:Math.max(1024,inp.length*3)),op=0,ip=0,bb=0,bc=0;
+ const grow=n=>{if(op+n>out.length){let m=out.length*2;while(m<op+n)m*=2;const o=new Uint8Array(m);o.set(out.subarray(0,op));out=o}};
+ const bits=n=>{while(bc<n){if(ip>=inp.length)throw new Error('eof');bb|=inp[ip++]<<bc;bc+=8}const v=bb&((1<<n)-1);bb>>>=n;bc-=n;return v};
+ const build=(lens)=>{const cnt=new Uint16Array(16),offs=new Uint16Array(16);for(const l of lens)cnt[l]++;cnt[0]=0;for(let i=1;i<16;i++)offs[i]=offs[i-1]+cnt[i-1];const sym=new Uint16Array(lens.length);for(let i=0;i<lens.length;i++)if(lens[i])sym[offs[lens[i]]++]=i;return{cnt,sym}};
+ const dec=h=>{let code=0,first=0,index=0;for(let len=1;len<16;len++){code|=bits(1);const c=h.cnt[len];if(code-c<first)return h.sym[index+(code-first)];index+=c;first+=c;first<<=1;code<<=1}throw new Error('code')};
+ const LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+ const DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+ let fl=null,fd=null;
+ for(;;){const last=bits(1),type=bits(2);
+  if(type===0){bb=0;bc=0;if(ip+4>inp.length)throw new Error('eof');const len=inp[ip]|(inp[ip+1]<<8);ip+=4;if(ip+len>inp.length)throw new Error('eof');grow(len);out.set(inp.subarray(ip,ip+len),op);op+=len;ip+=len}
+  else if(type===1||type===2){let L,D;
+   if(type===1){if(!fl){const a=new Uint8Array(288);a.fill(8,0,144);a.fill(9,144,256);a.fill(7,256,280);a.fill(8,280,288);fl=build(a);fd=build(new Uint8Array(30).fill(5))}L=fl;D=fd}
+   else{const hl=bits(5)+257,hd=bits(5)+1,hc=bits(4)+4,ord=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],cl=new Uint8Array(19);
+    for(let i=0;i<hc;i++)cl[ord[i]]=bits(3);const ch=build(cl),lens=new Uint8Array(hl+hd);let i=0;
+    while(i<hl+hd){const s=dec(ch);if(s<16)lens[i++]=s;else{let r,v=0;if(s===16){if(!i)throw new Error('rep');v=lens[i-1];r=3+bits(2)}else if(s===17)r=3+bits(3);else r=11+bits(7);while(r--)lens[i++]=v}}
+    L=build(lens.subarray(0,hl));D=build(lens.subarray(hl))}
+   for(;;){const s=dec(L);if(s<256){grow(1);out[op++]=s}else if(s===256)break;else{const k=s-257;if(k>28)throw new Error('len');const len=LB[k]+bits(LE[k]),d=dec(D),dist=DB[d]+bits(DE[d]);if(dist>op)throw new Error('dist');grow(len);for(let j=0;j<len;j++,op++)out[op]=out[op-dist]}}}
+  else throw new Error('type');
+  if(last)break}
+ return out.subarray(0,op)}
+const looksAudio=b=>{const s=String.fromCharCode(...b.subarray(0,12));return s.startsWith('ID3')||(b[0]===0xFF&&(b[1]&0xE0)===0xE0)||s.slice(4,8)==='ftyp'||/^(fLaC|RIFF|OggS|FORM|caff)/.test(s)};
 async function unzip(f){const n=f.size;let why='';
  try{toast('ZIP açılıyor: '+f.name,0);
   const tlen=Math.min(n,65558+20),toff=n-tlen,tail=await rd(f,toff,tlen),tv=new DataView(tail.buffer);let e=-1;
@@ -489,7 +511,7 @@ async function unzip(f){const n=f.size;let why='';
    const z64=Number(tv.getBigUint64(e-20+8,true)),zh=await rd(f,z64,56),zv=new DataView(zh.buffer);
    if(zv.getUint32(0,true)!==0x06064b50){why='ZIP64 kaydı bozuk';throw 0}
    cnt=Number(zv.getBigUint64(32,true));cdSize=Number(zv.getBigUint64(40,true));cdOff=Number(zv.getBigUint64(48,true))}
-  const cd=await rd(f,cdOff,cdSize),dv=new DataView(cd.buffer),out=[];let p=0,skipped=0,bad=0;
+  const cd=await rd(f,cdOff,cdSize),dv=new DataView(cd.buffer),out=[];let p=0,skipped=0,bad=0,odd=0,why2='';
   for(let k=0;k<cnt&&p+46<=cd.length;k++){if(dv.getUint32(p,true)!==0x02014b50)break;
    const method=dv.getUint16(p+10,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true);
    let csize=dv.getUint32(p+20,true),usize=dv.getUint32(p+24,true),lho=dv.getUint32(p+42,true);
@@ -501,15 +523,18 @@ async function unzip(f){const n=f.size;let why='';
      if(lho===0xFFFFFFFF){lho=Number(dv.getBigUint64(q,true));q+=8}}x+=4+sz}
    p=xe+cl;
    if(name.endsWith('/')||!AUDIO_RE.test(name)||/(^|\/)(__MACOSX|\.)/.test(name))continue;
-   try{const lh=await rd(f,lho,30),lv=new DataView(lh.buffer);if(lv.getUint32(0,true)!==0x04034b50){bad++;continue}
-    const start=lho+30+lv.getUint16(26,true)+lv.getUint16(28,true),data=f.slice(start,start+csize);let blob;
-    if(method===0)blob=data;
-    else if(method===8){if(!('DecompressionStream' in window)){skipped++;continue}blob=await new Response(data.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob()}
-    else{skipped++;continue}
+   try{const lh=await rd(f,lho,30),lv=new DataView(lh.buffer);if(lv.getUint32(0,true)!==0x04034b50){bad++;why2=why2||'yerel başlık yok';continue}
+    const start=lho+30+lv.getUint16(26,true)+lv.getUint16(28,true),raw=await rd(f,start,csize);let bytes=null;
+    if(method===0)bytes=raw;
+    else if(method===8){if('DecompressionStream' in window){try{bytes=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer())}catch(_){bytes=null}}
+     if(!bytes||(usize&&bytes.length!==usize)){try{bytes=inflateRaw(raw,usize)}catch(_){bytes=null}}}
+    else{skipped++;why2=why2||'sıkıştırma türü '+method;continue}
+    if(!bytes||(usize&&bytes.length!==usize)){bad++;why2=why2||'boyut tutmadı';continue}
+    if(!looksAudio(bytes))odd++;
     const nm=name.split('/').pop(),ext=nm.split('.').pop().toLowerCase();
-    out.push(new File([blob],nm,{type:MIME[ext]||'audio/mpeg',lastModified:Date.now()}));toast(`ZIP açılıyor: ${out.length} şarkı bulundu`,0)}catch(_){bad++}}
-  if(!out.length){toast(skipped?'Bu ZIP\'in sıkıştırma türü bu cihazda açılamıyor. “Dosya seç” ile toplu seçmeyi dene.':bad?'ZIP içindeki dosyalar okunamadı. “Dosya seç” ile toplu seçmeyi dene.':'Bu ZIP içinde ses dosyası yok (MP3, M4A, FLAC, WAV…)',5000);return []}
-  if(bad||skipped)toast(`${out.length} şarkı açıldı, ${bad+skipped} dosya atlandı`,3500);
+    out.push(new File([bytes],nm,{type:MIME[ext]||'audio/mpeg',lastModified:Date.now()}));toast(`ZIP açılıyor: ${out.length} şarkı bulundu`,0)}catch(_){bad++;why2=why2||'okuma hatası'}}
+  if(!out.length){toast(skipped?'Bu ZIP\'in sıkıştırma türü bu cihazda açılamıyor. “Dosya seç” ile toplu seçmeyi dene.':bad?'ZIP içindeki dosyalar okunamadı ('+why2+'). “Dosya seç” ile toplu seçmeyi dene.':'Bu ZIP içinde ses dosyası yok (MP3, M4A, FLAC, WAV…)',5000);return []}
+  if(bad||skipped)toast(`${out.length} şarkı açıldı, ${bad+skipped} dosya atlandı (${why2})`,4500);else if(odd)toast(`${out.length} şarkı açıldı; ${odd} dosyanın biçimi tanınmadı, çalmayabilir`,4500);
   return out}
  catch(err){toast('ZIP açılamadı'+(why?': '+why:'')+'. “Dosya seç” ile toplu seçmeyi dene.',5000);return []}}
 async function importFiles(list){

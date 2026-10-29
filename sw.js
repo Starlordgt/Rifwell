@@ -1,5 +1,5 @@
 // Riffwell çevrimdışı önbellek. index.html'i güncellediğinde SURUM'ü artır (riffwell-v2 gibi).
-const SURUM = 'riffwell-v4';
+const SURUM = 'riffwell-v5';
 const DOSYALAR = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(SURUM).then(c => c.addAll(DOSYALAR)).then(() => self.skipWaiting()));
