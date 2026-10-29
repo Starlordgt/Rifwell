@@ -211,7 +211,7 @@ input[type=range]:disabled{opacity:.5}
 .fxh small{display:block;color:var(--muted);font-size:13px;font-weight:400}
 .sl{display:grid;grid-template-columns:100px minmax(0,1fr) 64px;align-items:center;gap:10px;font-size:14.5px}
 .sl output{font-family:var(--mono);font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
-.sw{position:relative;width:62px;height:30px;flex:none}
+.sw{position:relative;display:inline-block;width:62px;height:30px;flex:none}
 .sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
 .sw span{position:absolute;inset:0;border-radius:999px;background:var(--track);transition:background .25s;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
 .sw span::after{content:"";position:absolute;top:2px;left:2px;width:38px;height:26px;border-radius:999px;background:var(--knob);box-shadow:0 2px 8px rgba(0,0,0,.22),inset 0 1px 0 #fff;transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
@@ -307,8 +307,7 @@ input[type=range]:disabled{opacity:.5}
 <body>
 
 <div class="ambient" aria-hidden="true"></div>
-<input id="fileIn" class="sr" type="file" multiple accept="audio/*,.mp3,.m4a,.aac,.flac,.wav,.ogg,.opus,.aif,.aiff,.zip">
-<input id="zipIn" class="sr" type="file" multiple accept=".zip,application/zip">
+<input id="fileIn" class="sr" type="file" multiple accept="audio/*,.mp3,.m4a,.aac,.flac,.wav,.ogg,.opus,.aif,.aiff">
 
 <div class="shell">
   <header class="hdr root" id="hdr">
@@ -549,16 +548,16 @@ async function importFiles(list){
  renderPage('none');toast(files.length+' şarkı eklendi');
 }
 $('#fileIn').onchange=e=>{closeSheet();importFiles(e.target.files);e.target.value=''};
-$('#zipIn').onchange=e=>{closeSheet();importFiles(e.target.files);e.target.value=''};
 function addMenu(){openSheet(`<div class="grab"></div><h4>Şarkı ekle</h4>
- <label class="opt" for="fileIn" style="cursor:pointer">${I.note}<span><b style="font-weight:600;display:block">Dosya seç</b><span class="s" style="white-space:normal">Birden fazla şarkı için açılan pencerede sağ üstteki “Seç”e dokun, şarkıları işaretle, sonra “Aç”.</span></span></label>
- <label class="opt" for="zipIn" style="cursor:pointer">${I.folder}<span><b style="font-weight:600;display:block">Klasörün tamamı (ZIP)</b><span class="s" style="white-space:normal">Dosyalar uygulamasında klasöre basılı tut, “Sıkıştır”a dokun. Oluşan ZIP'i burada seç, içindeki tüm şarkılar eklenir.</span></span></label>
+ <label class="opt" for="fileIn" style="cursor:pointer">${I.note}<span><b style="font-weight:600;display:block">Dosya seç</b><span class="s" style="white-space:normal">Birden fazla şarkı için açılan pencerede sağ üstteki “Seç”e dokun, şarkıları işaretle, sonra “Aç”. Bir klasördeki tüm şarkıları seçmek için klasörü aç, “Seç” ve ardından “Tümünü Seç”.</span></span></label>
  <p class="hint" style="margin-top:8px">Bilgisayarda dosyaları bu sayfanın üzerine sürükleyip bırakabilirsin.</p>`)}
 document.addEventListener('dragover',e=>{if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files'))e.preventDefault()});
 document.addEventListener('drop',e=>{if(e.dataTransfer&&e.dataTransfer.files.length){e.preventDefault();importFiles(e.dataTransfer.files)}});
 
 /* ===== Ses motoru ve DSP ===== */
-const audio=new Audio();audio.preload='auto';audio.setAttribute('playsinline','');
+function mkAudio(){const a=new Audio();a.preload='auto';a.setAttribute('playsinline','');bindAudio(a);return a}
+let audio=mkAudio();
+try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
 const BANDS=[32,64,125,250,500,1000,2000,4000,8000,16000];
 const FX_DEF={on:false,eqOn:true,eq:[0,0,0,0,0,0,0,0,0,0],pre:0,bass:0,crystal:0,width:100,surround:0,surSpeed:0.15,reverb:0,room:'salon',echo:0,echoMs:280,echoFb:35,comp:false,balance:0,mono:false};
 let fx=Object.assign({},FX_DEF,ls.get('fx',{}));fx.eq=(fx.eq&&fx.eq.length===10)?fx.eq:FX_DEF.eq.slice();
@@ -629,10 +628,16 @@ function prev(){if(audio.currentTime>3||qi<=0){audio.currentTime=0;return}playAt
 function toggle(){if(qi<0||!audio.src){playFrom(tracks.map(t=>t.id),null,'Tüm şarkılar');return}
  if(fx.on)engineOn();else if(ctx&&ctx.state==='suspended')ctx.resume();audio.paused?audio.play().catch(()=>{}):audio.pause()}
 function applySpeed(){audio.playbackRate=speed;try{audio.preservesPitch=keepPitch;audio.webkitPreservesPitch=keepPitch;audio.mozPreservesPitch=keepPitch}catch(e){}}
-audio.addEventListener('ended',()=>{if(sleepEnd){clearSleep();toast('Uyku zamanlayıcı çalmayı durdurdu');updateNow();return}next(true)});
-['play','pause'].forEach(ev=>audio.addEventListener(ev,()=>{updateNow();markRows();if(ev==='play')drawViz()}));
-audio.addEventListener('timeupdate',tick);audio.addEventListener('loadedmetadata',tick);
-audio.addEventListener('error',()=>{if(qi>=0&&audio.getAttribute('src'))toast('Bu dosya bu cihazda çalınamıyor')});
+function bindAudio(a){const mine=f=>e=>{if(a===audio)f(e)};
+ a.addEventListener('ended',mine(()=>{if(sleepEnd){clearSleep();toast('Uyku zamanlayıcı çalmayı durdurdu');updateNow();return}next(true)}));
+ ['play','pause'].forEach(ev=>a.addEventListener(ev,mine(()=>{updateNow();markRows();if(ev==='play')drawViz()})));
+ a.addEventListener('timeupdate',mine(tick));a.addEventListener('loadedmetadata',mine(tick));
+ a.addEventListener('error',mine(()=>{if(qi>=0&&a.getAttribute('src'))toast('Bu dosya bu cihazda çalınamıyor')}))}
+/* Ses motorunu tamamen kapat: Web Audio'yu bırak, yeni bir ses öğesiyle kaldığı yerden devam et (kilit ekranında çalma için) */
+function detachEngine(){if(!ctx)return;const old=audio,t=old.currentTime,playing=!old.paused,src=old.getAttribute('src');
+ audio=mkAudio();old.pause();try{ctx.close()}catch(e){}ctx=null;N={};analyser=null;roomBuilt='';
+ try{old.removeAttribute('src');old.load()}catch(e){}
+ if(src){audio.src=src;applySpeed();audio.addEventListener('loadedmetadata',()=>{try{audio.currentTime=t}catch(e){}},{once:true});if(playing)audio.play().catch(()=>{})}}
 
 /* ===== Yardımcılar ===== */
 const hue=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h};
@@ -792,10 +797,10 @@ PAGES.playlist=({k})=>{const p=playlists.find(x=>x.id===k);if(!p)return {title:'
 PAGES.fx=()=>{const sl=(id,label,min,max,step,val,out)=>`<label class="sl" for="${id}"><span>${label}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"><output id="${id}_o">${out}</output></label>`;
  const curPre=Object.keys(FX_PRESETS).find(k=>{const p=FX_PRESETS[k];return Object.keys(p).every(x=>fx[x]===p[x])});
  const curEq=Object.keys(EQ_PRESETS).find(k=>EQ_PRESETS[k].every((v,i)=>v===fx.eq[i]));
- const sw=(id,on,label)=>`<span class="sw"><input type="checkbox" id="${id}" ${on?'checked':''} aria-label="${label}"><span></span></span>`;
+ const sw=(id,on,label)=>`<label class="sw"><input type="checkbox" id="${id}" ${on?'checked':''} aria-label="${label}"><span></span></label>`;
  return {title:'Efektler',html:`<h1 class="big-ttl">Ses efektleri</h1>
  <div class="fxcard master"><div class="fxh"><div><b>Ses motoru</b><small>${fx.on?'Efektler uygulanıyor':'Kapalı: ses olduğu gibi çalar'}</small></div>${sw('fxOn',fx.on,'Ses efektleri')}</div>
- <div class="chips">${Object.keys(FX_PRESETS).map(k=>`<button class="chip" data-fxp="${k}" aria-pressed="${fx.on&&k===curPre}">${k}</button>`).join('')}</div>
+ <div class="chips">${Object.keys(FX_PRESETS).map(k=>`<button class="chip" data-fxp="${k}" aria-pressed="${k==='Kapalı'?!fx.on:fx.on&&k===curPre}">${k}</button>`).join('')}</div>
  ${IOS?'<p class="warn">iPhone notu: Ses motoru açıkken ekran kilitlenince iOS sesi durdurabilir. Kilit ekranında dinlerken kapalı tut.</p>':''}</div>
  <div class="${fx.on?'':'fxoff'}"><div class="fxbody">
  <div class="fxcard"><div class="fxh"><div><b>10 bantlı ekolayzır</b><small>${curEq||'Özel'}</small></div>${sw('eqOn',fx.eqOn,'Ekolayzır')}</div>
@@ -879,7 +884,7 @@ function act(a,el){
 }
 document.addEventListener('change',e=>{const t=e.target;
  if(t.id==='sort'){sortBy=t.value;ls.set('sort',sortBy);renderPage('none')}
- else if(t.id==='fxOn'){fx.on=t.checked;if(fx.on){const ok=engineOn();if(!ok){fx.on=false;toast('Bu tarayıcı ses efektlerini desteklemiyor')}else if(IOS)toast('Kilit ekranında dinlerken ses motorunu kapalı tut',3500)}applyFx();renderPage('none')}
+ else if(t.id==='fxOn'){fx.on=t.checked;if(fx.on){const ok=engineOn();if(!ok){fx.on=false;toast('Bu tarayıcı ses efektlerini desteklemiyor')}else if(IOS)toast('Kilit ekranında dinlerken ses motorunu kapalı tut',3500)}else{applyFx();detachEngine();toast('Ses efektleri kapalı')}applyFx();renderPage('none')}
  else if(t.id==='eqOn'){fx.eqOn=t.checked;applyFx()}
  else if(t.id==='comp'||t.id==='mono'){fx[t.id]=t.checked;applyFx();renderPage('none')}
 });
@@ -890,7 +895,7 @@ document.addEventListener('input',e=>{const t=e.target;if(t.type==='range')paint
  if(map[t.id]){fx[t.id]=+t.value;$('#'+t.id+'_o').textContent=map[t.id](+t.value);applyFx()}
 });
 document.addEventListener('submit',e=>{if(e.target.id!=='plForm')return;e.preventDefault();const n=$('#plName').value.trim();if(!n){toast('Listeye bir ad ver');return}const p={id:'p'+Date.now().toString(36),name:n,ids:[]};playlists.push(p);saveMeta();go('playlist',p.id);toast('“'+n+'” oluşturuldu')});
-document.addEventListener('click',e=>{const p=e.target.closest('[data-fxp]');if(p){const pr=FX_PRESETS[p.dataset.fxp];Object.assign(fx,pr);if(p.dataset.fxp!=='Kapalı'&&!fx.on){fx.on=engineOn()}applyFx();renderPage('none');toast(p.dataset.fxp+' uygulandı');return}
+document.addEventListener('click',e=>{const p=e.target.closest('[data-fxp]');if(p){const pr=FX_PRESETS[p.dataset.fxp];Object.assign(fx,pr);if(p.dataset.fxp==='Kapalı'){fx.on=false;applyFx();detachEngine();renderPage('none');toast('Ses efektleri kapalı');return}if(!fx.on){fx.on=engineOn()}applyFx();renderPage('none');toast(p.dataset.fxp+' uygulandı');return}
  const q=e.target.closest('[data-eqp]');if(q){fx.eq=EQ_PRESETS[q.dataset.eqp].slice();applyFx();renderPage('none');return}
  const r=e.target.closest('[data-room]');if(r){fx.room=r.dataset.room;if(!fx.reverb)fx.reverb=25;applyFx();renderPage('none')}});
 
