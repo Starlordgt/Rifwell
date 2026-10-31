@@ -10,9 +10,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Riffwell">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest?v=2">
+<link rel="apple-touch-icon" href="riffwell-dark-180.png">
+<link rel="icon" type="image/png" href="riffwell-dark-192.png">
 <style>
 /* Layout: Liquid Glass. Kapak renginden beslenen ortam katmanı üzerinde yüzen cam yüzeyler; sayfa yığını, yüzen kapsül sekme çubuğu + ayrı arama düğmesi, üstünde cam mini çalar. */
 :root{
@@ -1188,7 +1188,7 @@ function markRows(){const c=cur();document.querySelectorAll('.row[data-tid]').fo
  const a=r.querySelector('.art');if(!a)return;const vu=a.querySelector('.vu');if(on&&!vu){const num=a.querySelector('.num');a.insertAdjacentHTML('beforeend',num?'<span class="vu" style="background:none"><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent)"></i></span>':'<span class="vu"><i></i><i></i><i></i></span>')}if(!on&&vu)vu.remove()})}
 const card=(go,k,ts,title,sub,round)=>`<button class="card" data-go="${go}" data-k="${esc(k)}"><div class="art${round?' round':''}">${coverFor(ts).art?`<img src="${coverFor(ts).art}" alt="">`:`<span class="gen" style="--h:${hue(k)}">${esc(initials(k))}</span>`}</div><div><b>${esc(title)}</b><span>${esc(sub)}</span></div></button>`;
 const navRow=(go,k,artHtml,title,sub,round)=>`<button class="navrow" data-go="${go}" data-k="${esc(k)}"><div class="art${round?' round':''}">${artHtml}</div><div class="meta"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><span class="chev">${I.chev}</span></button>`;
-const LOGO='icon-512.png';
+const LOGO='riffwell-dark-512.png';
 const emptyBox=(h,p,btn,logo)=>`<div class="empty">${logo?`<img class="logo-big" src="${LOGO}" alt="Riffwell">`:''}<h3>${h}</h3><p>${p}</p>${btn?`<button class="btn pri" data-act="addMenu">${I.plus}Şarkı ekle</button>`:''}</div>`;
 
 const lc=s=>String(s??'').toLocaleLowerCase('tr');
