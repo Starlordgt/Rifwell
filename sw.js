@@ -1,6 +1,6 @@
 // Riffwell çevrimdışı önbellek. Güncellemede SURUM'ü bir artır.
 // Sayfa önce internetten alınır (güncellemeler hemen gelir), internet yoksa önbellekten açılır.
-const SURUM = 'riffwell-v20';
+const SURUM = 'riffwell-v21';
 const DOSYALAR = ['./', 'index.html', 'manifest.webmanifest', 'riffwell-dark-192.png', 'riffwell-dark-512.png', 'riffwell-dark-180.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(SURUM)

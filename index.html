@@ -733,6 +733,27 @@ html.skin-metal.skin-metal:root{--amb:.7;--lg-blur:blur(14px) saturate(190%) bri
 .skin-metal .sp :is(.kbtn,.kpow,.klabel){background-image:none;background-color:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 1px rgba(255,255,255,.12),0 4px 14px rgba(0,0,0,.25)}
 .skin-metal .sp .kbtn.on{background-color:rgba(90,209,230,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 1px rgba(90,209,230,.6)}
 .skin-metal .np .qpos{background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 0 0 1px rgba(255,255,255,.1)}
+
+/* ===== Çok küçük yazı ve küçük boyutlarda efekt paneli ölçeği ===== */
+.fz-xs{--fzk:.8}
+.fz-xs #page,.fz-xs .hdr .ttl,.fz-xs .mini .meta,.fz-xs .mini .qpos,.fz-xs .dr-item,.fz-xs .dr-head b,.fz-xs .sheet-card,.fz-xs .np-meta,.fz-xs .np .times,.fz-xs .np-top .lbl,.fz-xs .toast{zoom:0.8}
+.fz-xs #page.home{zoom:0.880;height:calc((100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 70px - var(--mini-h,12px)) / 0.880);height:calc((100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 70px - var(--mini-h,12px)) / 0.880)}
+
+:is(.fz-xs,.fz-s) .kp{--ks:calc(clamp(62px,min(27vw,10.5dvh),112px) * var(--fzk))}
+:is(.fz-xs,.fz-s) .kp .kc-ctl{grid-template-columns:calc(48px * var(--fzk)) minmax(0,1fr)}
+:is(.fz-xs,.fz-s) .kp .kc-ctl :is(.kpow,.ksel,.klabel),:is(.fz-xs,.fz-s) .kp .kside .kbtn{height:calc(clamp(40px,5.8dvh,52px) * var(--fzk))}
+:is(.fz-xs,.fz-s) .kp .kpow svg{width:calc(26px * var(--fzk));height:calc(26px * var(--fzk))}
+:is(.fz-xs,.fz-s) .kp .kp-tabs .kbtn{height:calc(clamp(40px,5.6dvh,48px) * var(--fzk))}
+:is(.fz-xs,.fz-s) .kp .kp-preset{padding:calc(12px * var(--fzk)) calc(20px * var(--fzk))}
+:is(.fz-xs,.fz-s) .kp .kp-x,:is(.fz-xs,.fz-s) .sp .kp-x{width:calc(54px * var(--fzk));height:calc(54px * var(--fzk))}
+:is(.fz-xs,.fz-s) .kp .kv{min-width:calc(44px * var(--fzk));padding:calc(5px * var(--fzk)) calc(8px * var(--fzk))}
+:is(.fz-xs,.fz-s) .kp .kc-ctl{gap:calc(10px * var(--fzk))}
+:is(.fz-xs,.fz-s) .sp-knobs{--ks:calc(clamp(60px,min(20vw,10dvh),92px) * var(--fzk))}
+:is(.fz-xs,.fz-s) .sp :is(.kbtn,.kpow,.klabel){height:calc(48px * var(--fzk))}
+:is(.fz-xs,.fz-s) .sp .sp-grid2 .kbtn{height:calc(clamp(42px,6dvh,50px) * var(--fzk))}
+:is(.fz-xs,.fz-s) .sp .sp-grid3 .kbtn{height:calc(clamp(38px,5dvh,44px) * var(--fzk))}
+:is(.fz-xs,.fz-s) .sp .sp-row{grid-template-columns:calc(52px * var(--fzk)) minmax(0,1fr)}
+:is(.fz-xs,.fz-s) .sp .kpow svg{width:calc(24px * var(--fzk));height:calc(24px * var(--fzk))}
 </style>
 <script>try{if(JSON.parse(localStorage.getItem('wavelet.skin')||'"metal"')!=='glass')document.documentElement.classList.add('skin-metal')}catch(e){document.documentElement.classList.add('skin-metal')}</script>
 </head>
@@ -1351,7 +1372,7 @@ PAGES.grp=({k})=>{const i=k.indexOf('|'),type=k.slice(0,i),v=k.slice(i+1),G=GRPS
 PAGES.settings=()=>{const fz=ls.get('fz','m'),sk=ls.get('skin','metal'),th=ls.get('theme','system'),v=ls.get('view','list'),size=tracks.reduce((s,t)=>s+(t.size||0),0);
  const chip=(a,val,cur,label)=>`<button class="chip" data-${a}="${val}" aria-pressed="${cur===val}">${label}</button>`;
  return {title:'Ayarlar',html:`<h1 class="big-ttl">Ayarlar</h1>
- <div class="fxcard"><div class="fxh"><div><b>Yazı boyutu</b><small>Listeler, menüler ve çalıyor ekranındaki yazılar</small></div></div><div class="chips wrap">${chip('fz','s',fz,'Küçük')}${chip('fz','m',fz,'Normal')}${chip('fz','l',fz,'Büyük')}${chip('fz','xl',fz,'Çok büyük')}</div><div class="fz-prev"><b>Aa</b><span>Gülpembe · Barış Manço — örnek yazı</span></div></div>
+ <div class="fxcard"><div class="fxh"><div><b>Yazı boyutu</b><small>Listeler, menüler ve çalıyor ekranındaki yazılar</small></div></div><div class="chips wrap">${chip('fz','xs',fz,'Çok küçük')}${chip('fz','s',fz,'Küçük')}${chip('fz','m',fz,'Normal')}${chip('fz','l',fz,'Büyük')}${chip('fz','xl',fz,'Çok büyük')}</div><div class="fz-prev"><b>Aa</b><span>Gülpembe · Barış Manço — örnek yazı</span></div></div>
  <div class="fxcard"><div class="fxh"><div><b>Görünüm</b><small>Metal: jetAudio tarzı koyu tasarım · Cam: şeffaf tasarım</small></div></div><div class="chips wrap">${chip('skin','metal',sk,'Metal')}${chip('skin','glass',sk,'Cam')}</div></div>
  <div class="fxcard"><div class="fxh"><div><b>Tema</b><small>${sk==='metal'?'Cam görünümünde açık veya koyu':'Uygulamanın açık veya koyu görünümü'}</small></div></div><div class="chips wrap">${chip('th','system',th,'Sistem')}${chip('th','light',th,'Açık')}${chip('th','dark',th,'Koyu')}</div></div>
  <div class="fxcard"><div class="fxh"><div><b>Liste görünümü</b><small>Albüm, sanatçı ve tür sayfaları</small></div></div><div class="chips wrap">${chip('vw','list',v,'Liste')}${chip('vw','grid',v,'Izgara')}</div></div>
@@ -1370,7 +1391,7 @@ function applyPageFilter(){const q=pageQ;document.querySelectorAll('#page [data-
 function pageMenu(){openSheet(`<div class="grab"></div><h4>Seçenekler</h4>
  <button class="opt" data-pm="add">${I.plus}Şarkı ekle</button><button class="opt" data-pm="view">${ls.get('view','list')==='list'?I.grid+'Izgara görünümü':I.bullets+'Liste görünümü'}</button><button class="opt" data-pm="files">${I.folder}Dosya yöneticisi</button><button class="opt" data-pm="settings">${I.gear}Ayarlar</button>`);
  $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-pm]');if(!b)return;const a=b.dataset.pm;closeSheet();if(a==='add')addMenu();else if(a==='view'){ls.set('view',ls.get('view','list')==='list'?'grid':'list');renderPage('none')}else if(a==='files')go('files');else if(a==='settings')setTab('settings')}}
-function setFont(v){ls.set('fz',v);const r=document.documentElement;['s','l','xl'].forEach(k=>r.classList.remove('fz-'+k));if(v!=='m')r.classList.add('fz-'+v)}
+function setFont(v){ls.set('fz',v);const r=document.documentElement;['xs','s','l','xl'].forEach(k=>r.classList.remove('fz-'+k));if(v!=='m')r.classList.add('fz-'+v)}
 function setSkin(v){ls.set('skin',v);document.documentElement.classList.toggle('skin-metal',v==='metal')}
 function setTheme(v){ls.set('theme',v);const r=document.documentElement;if(v==='light'||v==='dark')r.setAttribute('data-theme',v);else r.removeAttribute('data-theme')}
 async function backfillTags(force){const list=tracks.filter(t=>!t.demo&&t.blob&&(force||t.tagsV!==2));let n=0;
