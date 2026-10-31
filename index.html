@@ -983,10 +983,10 @@ function cleanGenre(s){s=String(s||'').trim();const m=s.match(/^\((\d+)\)(.*)$/)
 
 /* Yüksek çözünürlüklü kapak: dosyanın içindeki orijinal görsel, bellekte önbelleklenir */
 const hiCache=new Map(),hiJobs={};
-function hiResFor(t){if(!t||!t.blob||t.demo)return Promise.resolve(null);if(hiCache.has(t.id))return Promise.resolve(hiCache.get(t.id));if(hiJobs[t.id])return hiJobs[t.id];
+function hiResFor(t){if(t&&t.artBlob){if(!hiCache.has(t.id))hiCache.set(t.id,URL.createObjectURL(t.artBlob));return Promise.resolve(hiCache.get(t.id))}if(!t||!t.blob||t.demo)return Promise.resolve(null);if(hiCache.has(t.id))return Promise.resolve(hiCache.get(t.id));if(hiJobs[t.id])return hiJobs[t.id];
  hiJobs[t.id]=readTags(t.blob,false,true).then(m=>{delete hiJobs[t.id];const u=m&&m.art&&m.art.startsWith('blob:')?m.art:null;if(u){hiCache.set(t.id,u);if(hiCache.size>24){const k=hiCache.keys().next().value;URL.revokeObjectURL(hiCache.get(k));hiCache.delete(k)}}return u}).catch(()=>{delete hiJobs[t.id];return null});return hiJobs[t.id]}
 function upgradeImgs(root){(root||document).querySelectorAll('img[data-hi]').forEach(im=>{const t=byId(im.dataset.hi);hiResFor(t).then(u=>{if(u&&im.isConnected)im.src=u})})}
-async function rethumb(){const list=tracks.filter(t=>!t.demo&&t.blob&&t.art&&t.artV!==2);let n=0;
+async function rethumb(){const list=tracks.filter(t=>!t.demo&&t.blob&&t.art&&t.artV!==2&&!t.artBlob);let n=0;
  for(const t of list){try{const m=await readTags(t.blob,false);if(m.art){t.art=m.art;t.artV=2;idbPut(t);n++}else{t.artV=2;idbPut(t)}}catch(e){}}
  if(n)renderPage('none');return n}
 async function readTags(f,na,raw){try{const h=await rd(f,0,12);
@@ -1380,6 +1380,7 @@ PAGES.settings=()=>{const fz=ls.get('fz','m'),sk=ls.get('skin','metal'),th=ls.ge
  <div class="fxcard"><div class="fxh"><div><b>Görünüm</b><small>Metal: jetAudio tarzı koyu tasarım · Cam: şeffaf tasarım</small></div></div><div class="chips wrap">${chip('skin','metal',sk,'Metal')}${chip('skin','glass',sk,'Cam')}</div></div>
  <div class="fxcard"><div class="fxh"><div><b>Tema</b><small>${sk==='metal'?'Cam görünümünde açık veya koyu':'Uygulamanın açık veya koyu görünümü'}</small></div></div><div class="chips wrap">${chip('th','system',th,'Sistem')}${chip('th','light',th,'Açık')}${chip('th','dark',th,'Koyu')}</div></div>
  <div class="fxcard"><div class="fxh"><div><b>Liste görünümü</b><small>Albüm, sanatçı ve tür sayfaları</small></div></div><div class="chips wrap">${chip('vw','list',v,'Liste')}${chip('vw','grid',v,'Izgara')}</div></div>
+ <div class="fxcard"><div class="fxh"><div><b>İnternetten bilgi</b><small>Sanatçısı, albümü, kapağı veya yılı eksik ${tracks.filter(needsMeta).length} şarkı var</small></div></div><div class="btn-row"><button class="btn pri" data-act="bulkMeta">${I.search}Eksik bilgileri tamamla</button></div><p class="warn">Apple’ın iTunes arama hizmetinde şarkı adı ve dosya adıyla arar; yalnızca emin olduğu eşleşmeleri uygular. İnternet gerekir.</p></div>
  <div class="fxcard"><div class="fxh"><div><b>Kütüphane</b><small>${tracks.length} şarkı · ${fmtSize(size)}</small></div></div><div class="btn-row"><button class="btn" data-act="retag">${I.restore}Etiketleri yeniden oku</button><button class="btn" data-go="files">${I.folder}Dosya yöneticisi</button></div><p class="warn">Tür, besteci ve albüm sanatçısı şarkı etiketlerinden okunur.</p></div>
  <div class="fxcard"><div class="fxh"><div><b>Riffwell</b><small>Çevrimdışı müzik çalar</small></div></div></div>`}};
 const NAV=[['home','Ana Sayfa','home'],['artists','Sanatçılar','user'],['albums','Albümler','disc'],['songs','Şarkılar','note'],['lists','Çalma Listeleri','lists'],['genres','Türler','guitar'],['albumArtists','Albüm Sanatçıları','aartist'],['composers','Besteciler','clef'],['favs','Favoriler','heart'],['recent','Son Çalınanlar','clock'],['queue','Sıradakiler','queue'],['search','Ara','search'],['fx','Ses Efektleri','eq'],['files','Dosya Yöneticisi','folder'],['settings','Ayarlar','gear']];
@@ -1399,7 +1400,7 @@ function setFont(v){ls.set('fz',v);const r=document.documentElement;['xs','s','l
 function setSkin(v){ls.set('skin',v);document.documentElement.classList.toggle('skin-metal',v==='metal')}
 function setTheme(v){ls.set('theme',v);const r=document.documentElement;if(v==='light'||v==='dark')r.setAttribute('data-theme',v);else r.removeAttribute('data-theme')}
 async function backfillTags(force){const list=tracks.filter(t=>!t.demo&&t.blob&&(force||t.tagsV!==2));let n=0;
- for(const t of list){try{const m=await readTags(t.blob,true);t.genre=m.genre||null;t.composer=m.composer||null;t.albumArtist=m.albumArtist||null;if(m.year)t.year=m.year;t.tagsV=2;idbPut(t);n++}catch(e){}}
+ for(const t of list){try{const m=await readTags(t.blob,true);t.genre=m.genre||(t.metaSrc?t.genre:null)||null;t.composer=m.composer||t.composer||null;t.albumArtist=m.albumArtist||t.albumArtist||null;if(m.year)t.year=m.year;t.tagsV=2;idbPut(t);n++}catch(e){}}
  if(n&&['genres','albumArtists','composers','grp','albums','settings'].includes(stack[stack.length-1].p))renderPage('none');return n}
 function renderTabs(){const b=([k,n,ic])=>`<button class="tab" data-tab="${k}"${tab===k?' aria-current="page"':''}>${ic}<span>${n}</span></button>`;
  $('#tabs').innerHTML=`<div class="tabcap">${TABS.filter(t=>t[0]!=='search').map(b).join('')}</div><button class="tabsearch" data-tab="search" aria-label="Ara"${tab==='search'?' aria-current="page"':''}>${I.search}</button>`}
@@ -1439,6 +1440,7 @@ function act(a,el){
  if(a==='back')back();
  else if(a==='addMenu')addMenu();
  else if(a==='drawer')openDrawer();
+ else if(a==='bulkMeta')bulkMeta();
  else if(a==='playNew'){shuffle=false;ls.set('shuffle',false);playFrom(sorted(tracks).map(t=>t.id),el.dataset.id,'Son eklenenler')}
  else if(a==='knobs')openKnobs();
  else if(a==='view'){ls.set('view',ls.get('view','list')==='list'?'grid':'list');renderPage('none')}
@@ -1500,6 +1502,9 @@ function trackMenu(id,ctxs){const t=byId(id);if(!t)return;const plId=ctxs&&ctxs.
  <button class="opt" data-a="fav">${favs.has(id)?I.heartF+'Favorilerden çıkar':I.heart+'Favorilere ekle'}</button>
  <button class="opt" data-a="artist">${I.user}Sanatçıya git</button>
  <button class="opt" data-a="album">${I.disc}Albüme git</button>
+ <button class="opt" data-a="meta">${I.search}İnternetten bilgi bul</button>
+ <button class="opt" data-a="edit">${I.edit}Bilgileri düzenle</button>
+ ${t.orig?`<button class="opt" data-a="revert">${I.restore}Orijinal bilgilere dön</button>`:''}
  ${plId?`<button class="opt" data-a="plrm">${I.x}Bu listeden çıkar</button>`:''}
  <button class="opt danger" data-a="del">${I.trash}Şarkıyı sil</button>`);
  $('#sheetCard').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
@@ -1509,7 +1514,10 @@ function trackMenu(id,ctxs){const t=byId(id);if(!t)return;const plId=ctxs&&ctxs.
   else if(a==='artist'||a==='album'){closeSheet();closeNp();go(a,t[a])}
   else if(a==='plrm'){const p=playlists.find(p=>p.id===plId);if(p){p.ids=p.ids.filter(x=>x!==id);saveMeta()}closeSheet();renderPage('none');toast('Listeden çıkarıldı')}
   else if(a==='del')confirmDel(`“${t.title}” silinsin mi?`,'Şarkı bu cihazdan ve tüm listelerden kaldırılır.',[id]);
-  else if(a==='addpl')addToPlaylist([id],t.title)}}
+  else if(a==='addpl')addToPlaylist([id],t.title);
+  else if(a==='meta')metaSheet(id);
+  else if(a==='edit')editSheet(id);
+  else if(a==='revert'){revertMeta(t);closeSheet();afterMetaChange();toast('Orijinal bilgilere dönüldü')}}}
 function groupMenu(type,k){const ts=tracks.filter(t=>t[type]===k),ids=ts.map(t=>t.id),label=type==='album'?'albümü':'sanatçıyı';
  openSheet(`<div class="grab"></div><h4>${esc(k)}</h4><p class="hint">${ts.length} şarkı</p>
  <button class="opt" data-a="enq">${I.queue}Tümünü sıraya ekle</button>
@@ -1723,6 +1731,56 @@ $('#kpPreset').onclick=()=>{kSlot=(kSlot+1)%KSLOTS;ls.set('kslot',kSlot);const p
 function openKnobs(){renderKnobs();$('#kp').hidden=false;closeDrawer()}
 function closeKnobs(){$('#kp').hidden=true;if(stack[stack.length-1].p==='fx')renderPage('none')}
 $('#kpClose').innerHTML=I.x;$('#kpClose').onclick=closeKnobs;
+
+
+/* ===== İnternetten bilgi (iTunes arama) ===== */
+const normS=s=>lc(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ı/g,'i').replace(/[^a-z0-9]+/g,' ').trim();
+const toks=s=>new Set(normS(s).split(' ').filter(w=>w.length>1));
+const sim=(a,b)=>{const A=toks(a),B=toks(b);if(!A.size||!B.size)return 0;let n=0;A.forEach(w=>{if(B.has(w))n++});return n/Math.max(A.size,B.size)};
+const cleanName=s=>String(s||'').replace(/\.[a-z0-9]{2,4}$/i,'').replace(/_/g,' ').replace(/^\s*\d{1,3}[\s._)-]+(?=\D)/,'').replace(/[\(\[][^\)\]]*(official|video|audio|lyric|klip|hd|hq|kbps|remaster)[^\)\]]*[\)\]]/ig,'').replace(/\s{2,}/g,' ').trim();
+const needsMeta=t=>!t.demo&&(t.artist==='Bilinmeyen sanatçı'||t.album==='Bilinmeyen albüm'||!t.art||!t.year||!t.genre);
+function queryFor(t){const unk=t.artist==='Bilinmeyen sanatçı';const base=unk?cleanName(t.fname||t.title):cleanName(t.title);return unk?base:(t.artist+' '+base)}
+let jsonpN=0;
+function itunes(term,country){const url=`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=8&country=${country}`;
+ return fetch(url).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>new Promise((res,rej)=>{const cb='__it'+(++jsonpN),sc=document.createElement('script');const done=v=>{delete window[cb];sc.remove();clearTimeout(tm);v?res(v):rej(new Error('net'))};const tm=setTimeout(()=>done(null),9000);window[cb]=d=>done(d);sc.onerror=()=>done(null);sc.src=url+'&callback='+cb;document.head.appendChild(sc)}))}
+async function searchMeta(t,term){term=term||queryFor(t);let d=await itunes(term,'TR');if(!d.results||!d.results.length)d=await itunes(term,'US');
+ const res=(d.results||[]).filter(r=>r.kind==='song'||r.trackName);const ref=t.artist==='Bilinmeyen sanatçı'?cleanName(t.fname||t.title):t.title;
+ return res.map(r=>{const ts=Math.max(sim(r.trackName,ref),sim(r.trackName+' '+r.artistName,term)),as=t.artist==='Bilinmeyen sanatçı'?sim(r.artistName,term):sim(r.artistName,t.artist),dd=isFinite(t.duration)&&r.trackTimeMillis?Math.abs(r.trackTimeMillis/1000-t.duration):null;
+  const unk=t.artist==='Bilinmeyen sanatçı';return {r,unk,score:unk?ts*.85+(dd==null?.03:dd<=4?.15:dd<=15?.05:0):ts*.6+as*.3+(dd==null?.05:dd<=4?.1:dd<=15?.04:0),dd}}).sort((a,b)=>b.score-a.score)}
+async function fetchArt(r){const u=(r.artworkUrl100||'').replace(/\/\d+x\d+(bb)?\.(jpg|png|webp)$/i,'/1000x1000bb.jpg');if(!u)return {};
+ try{const b=await fetch(u).then(x=>{if(!x.ok)throw 0;return x.blob()});const ou=URL.createObjectURL(b);const th=await shrink(ou);URL.revokeObjectURL(ou);return {art:th||u.replace('1000x1000','600x600'),artBlob:b}}
+ catch(e){return {art:u.replace('1000x1000','600x600')}}}
+async function applyMeta(t,r,onlyMissing){if(!t.orig)t.orig={title:t.title,artist:t.artist,album:t.album,year:t.year||null,genre:t.genre||null,art:t.art||null};
+ const unk=t.artist==='Bilinmeyen sanatçı';
+ if(!onlyMissing||unk){t.title=r.trackName||t.title;t.artist=r.artistName||t.artist}
+ if(!onlyMissing||unk||t.album==='Bilinmeyen albüm')t.album=r.collectionName||t.album;
+ if(!onlyMissing||!t.year)t.year=r.releaseDate?String(r.releaseDate).slice(0,4):t.year;
+ if(!onlyMissing||!t.genre)t.genre=r.primaryGenreName||t.genre;
+ if(!onlyMissing||!t.art||unk){const a=await fetchArt(r);if(a.art){t.art=a.art;t.artBlob=a.artBlob||null;t.artV=2;if(hiCache.has(t.id)){URL.revokeObjectURL(hiCache.get(t.id));hiCache.delete(t.id)}}}
+ t.metaSrc='itunes';idbPut(t)}
+function revertMeta(t){if(!t.orig)return;Object.assign(t,t.orig);t.orig=null;t.metaSrc=null;t.artBlob=null;if(hiCache.has(t.id)){URL.revokeObjectURL(hiCache.get(t.id));hiCache.delete(t.id)}idbPut(t)}
+function afterMetaChange(){lastNowId=null;updateNow();renderPage('none')}
+async function metaSheet(id,term){const t=byId(id);if(!t)return;
+ openSheet(`<div class="grab"></div><h4>İnternetten bilgi bul</h4><p class="hint">${esc(t.fname||t.title)}</p><form class="field" id="mq" style="margin:0 4px 10px"><input id="mqI" value="${esc(term||queryFor(t))}" aria-label="Arama"><button class="btn pri" type="submit">${I.search}</button></form><div id="mqR"><p class="hint">Aranıyor…</p></div>`);
+ $('#mq').onsubmit=e=>{e.preventDefault();metaSheet(id,$('#mqI').value.trim())};
+ let list=[];try{list=await searchMeta(t,term)}catch(e){$('#mqR').innerHTML='<p class="hint">İnternete bağlanılamadı. Bu özellik internet bağlantısı ve GitHub sürümü gerektirir.</p>';return}
+ if($('#sheet').hidden||!$('#mqR'))return;
+ if(!list.length){$('#mqR').innerHTML='<p class="hint">Sonuç bulunamadı. Aramayı düzenleyip tekrar dene (ör. “Sanatçı Şarkı adı”).</p>';return}
+ $('#mqR').innerHTML=list.slice(0,6).map((x,i)=>`<button class="opt" data-mi="${i}" style="align-items:center"><span class="art" style="width:46px;height:46px;flex:none"><img src="${esc(x.r.artworkUrl100||'')}" alt=""></span><span style="min-width:0"><b style="display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.r.trackName)}</b><span class="s">${esc(x.r.artistName)} · ${esc(x.r.collectionName||'')}${x.r.releaseDate?' ('+String(x.r.releaseDate).slice(0,4)+')':''}${x.dd!=null&&x.dd<=4?' · süre tutuyor':''}</span></span></button>`).join('')+'<p class="hint" style="margin-top:8px">Doğru olanı seç. Şarkının adı, sanatçısı, albümü, yılı, türü ve kapağı güncellenir; istediğinde menüden orijinale dönebilirsin.</p>';
+ $('#mqR').onclick=async e=>{const b=e.target.closest('[data-mi]');if(!b)return;b.disabled=true;toast('Bilgiler uygulanıyor…',0);await applyMeta(t,list[+b.dataset.mi].r,false);closeSheet();afterMetaChange();toast('Şarkı bilgileri güncellendi')}}
+function editSheet(id){const t=byId(id);if(!t)return;const f=(k,l,v)=>`<label style="display:grid;gap:4px;margin:0 6px 10px;font-size:13px;color:var(--muted)">${l}<input id="ed_${k}" value="${esc(v||'')}" style="font:inherit;font-size:16px;color:var(--fg);padding:11px 14px;border-radius:12px;border:0;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)"></label>`;
+ openSheet(`<div class="grab"></div><h4>Bilgileri düzenle</h4><form id="edF">${f('title','Şarkı adı',t.title)}${f('artist','Sanatçı',t.artist)}${f('album','Albüm',t.album)}${f('year','Yıl',t.year)}${f('genre','Tür',t.genre)}<div class="btn-row" style="margin:6px"><button class="btn" type="button" id="edC">Vazgeç</button><button class="btn pri" type="submit">Kaydet</button></div></form>`);
+ $('#edC').onclick=closeSheet;
+ $('#edF').onsubmit=e=>{e.preventDefault();if(!t.orig)t.orig={title:t.title,artist:t.artist,album:t.album,year:t.year||null,genre:t.genre||null,art:t.art||null};
+  const g=k=>$('#ed_'+k).value.trim();t.title=g('title')||t.title;t.artist=g('artist')||'Bilinmeyen sanatçı';t.album=g('album')||'Bilinmeyen albüm';t.year=g('year')||null;t.genre=g('genre')||null;t.metaSrc=t.metaSrc||'manual';idbPut(t);closeSheet();afterMetaChange();toast('Kaydedildi')}}
+let metaRun=false;
+async function bulkMeta(){if(metaRun){toast('Arama zaten sürüyor');return}const list=tracks.filter(needsMeta);if(!list.length){toast('Eksik bilgisi olan şarkı yok');return}
+ metaRun=true;let ok=0,skip=0,fail=0;
+ for(let i=0;i<list.length;i++){const t=list[i];toast(`Bilgiler aranıyor ${i+1}/${list.length}`,0);
+  try{const res=await searchMeta(t);const best=res[0];if(best&&best.score>=.72&&(best.unk?(best.dd!=null&&best.dd<=6):(best.dd==null||best.dd<=6))){await applyMeta(t,best.r,true);ok++}else skip++}catch(e){fail++;if(fail>=3)break}
+  await new Promise(r=>setTimeout(r,3200))}
+ metaRun=false;afterMetaChange();
+ toast(fail>=3?'İnternete bağlanılamadı. Bağlantıyı kontrol edip tekrar dene.':`${ok} şarkı tamamlandı${skip?` · ${skip} şarkıda emin olunamadı, ⋯ menüsünden “İnternetten bilgi bul” ile seçebilirsin`:''}`,6000)}
 
 /* ===== Yan paneller: ekolayzır, ayrıntılar, hazır efektler ===== */
 const SPK={
