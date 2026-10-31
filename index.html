@@ -761,6 +761,7 @@ html.skin-metal.skin-metal:root{--amb:.7;--lg-blur:blur(14px) saturate(190%) bri
 
 <div class="ambient" aria-hidden="true"></div>
 <input id="fileIn" class="sr" type="file" multiple accept="audio/*,.mp3,.m4a,.aac,.flac,.wav,.ogg,.opus,.aif,.aiff">
+<input id="dirIn" class="sr" type="file" multiple webkitdirectory>
 
 <div class="shell">
   <header class="hdr root" id="hdr">
@@ -1059,18 +1060,21 @@ async function unzip(f){const n=f.size;let why='';
 async function importFiles(list){
  const raw=[...list];let files=[];
  for(const f of raw){if(/\.zip$/i.test(f.name)||/zip/.test(f.type))files.push(...await unzip(f));else if(/^audio\//.test(f.type)||AUDIO_RE.test(f.name))files.push(f)}
- if(!files.length){if(!raw.some(f=>/\.zip$/i.test(f.name)))toast('Ses dosyası bulunamadı. MP3, M4A, FLAC veya WAV seç.');return}
+ if(!files.length){toast('Seçimde ses dosyası bulunamadı. MP3, M4A, FLAC veya WAV seç.',3500);return}
+ {const have=new Set(tracks.filter(t=>!t.demo).map(t=>(t.fname||'')+'|'+t.size));const before=files.length;files=files.filter(f=>!have.has(f.name+'|'+f.size));var dupN=before-files.length;if(!files.length){toast('Bu şarkıların hepsi zaten kütüphanede',3500);return}}
  let n=0;for(const f of files){n++;toast(`Ekleniyor ${n}/${files.length}`,0);
   const [m,dur]=await Promise.all([readTags(f),getDur(f)]);
   let base=f.name.replace(/\.[^.]+$/,''),ar=null;const p=base.split(' - ');if(p.length>1){ar=p.shift().trim();base=p.join(' - ').trim()}
   const t={id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),title:m.title||base,artist:m.artist||ar||'Bilinmeyen sanatçı',album:m.album||'Bilinmeyen albüm',duration:dur,ext:(f.name.split('.').pop()||'').toUpperCase(),fname:f.name,size:f.size,art:m.art||null,year:m.year||null,genre:m.genre||null,composer:m.composer||null,albumArtist:m.albumArtist||null,tagsV:2,info:null,added:Date.now(),demo:false,blob:f};
   tracks.push(t);idbPut(t)}
- renderPage('none');toast(files.length+' şarkı eklendi');
+ renderPage('none');toast(files.length+' şarkı eklendi'+(dupN?` · ${dupN} şarkı zaten vardı`:''),3500);
 }
 $('#fileIn').onchange=e=>{closeSheet();importFiles(e.target.files);e.target.value=''};
+$('#dirIn').onchange=e=>{closeSheet();const n=e.target.files.length;if(!n){toast('Klasör seçilemedi. iOS 18.4 veya üstü gerekir; “Dosya seç”i dene.',4500);return}importFiles(e.target.files);e.target.value=''};
 function addMenu(){openSheet(`<div class="grab"></div><h4>Şarkı ekle</h4>
- <label class="opt" for="fileIn" style="cursor:pointer">${I.note}<span><b style="font-weight:600;display:block">Dosya seç</b><span class="s" style="white-space:normal">Birden fazla şarkı için açılan pencerede sağ üstteki “Seç”e dokun, şarkıları işaretle, sonra “Aç”. Bir klasördeki tüm şarkıları seçmek için klasörü aç, “Seç” ve ardından “Tümünü Seç”.</span></span></label>
- <p class="hint" style="margin-top:8px">Bilgisayarda dosyaları bu sayfanın üzerine sürükleyip bırakabilirsin.</p>`)}
+ <label class="opt" for="dirIn" style="cursor:pointer">${I.folder}<span><b style="font-weight:600;display:block">Klasör seç</b><span class="s" style="white-space:normal">Klasörü aç ve sağ üstteki “Aç”a dokun. İçindeki ve alt klasörlerdeki tüm şarkılar eklenir. iOS 18.4 veya üstü gerekir.</span></span></label>
+ <label class="opt" for="fileIn" style="cursor:pointer">${I.note}<span><b style="font-weight:600;display:block">Dosya seç</b><span class="s" style="white-space:normal">Sağ üstteki “Seç”e dokun ve şarkıları işaretle. Hızlı seçim için listede iki parmakla aşağı kaydır.</span></span></label>
+ <p class="hint" style="margin-top:8px">Daha önce eklenmiş şarkılar tekrar eklenmez; aynı klasörü yeniden seçince sadece yeni şarkılar gelir.</p>`)}
 document.addEventListener('dragover',e=>{if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files'))e.preventDefault()});
 document.addEventListener('drop',e=>{if(e.dataTransfer&&e.dataTransfer.files.length){e.preventDefault();importFiles(e.dataTransfer.files)}});
 
